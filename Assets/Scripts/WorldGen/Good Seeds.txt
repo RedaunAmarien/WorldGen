@@ -1,0 +1,35 @@
+1594721859
+
+Gen Preset Options:
+    A) Open Simplex 2
+        F Bm:       Medium continents and some islands, kind of a mix of shattered but not too much. Basically Average.
+        Ridged:     Land of thousands of lakes. Snaking sandbars around jagged seas.
+        Ping Pong:  Land of MILLIONS of lakes. Snaking rivers between snaking sandbars around extra jagged seas.
+
+    B) Open Simplex 2S
+        F Bm:       Naturalistic? Good variety of shapes and sizes overall. More expressive version of A1.
+        Ridged:     Same as A2, but less crazy and more varied.
+        Ping Pong:  Same as A3, but less crazy and more varied.
+
+    C) Cellular
+        Non-Frac:   Sharp, small, shard continents, massive round oceans. The ONLY notable non-fractal type, but very unnatural.
+        F Bm:       90% water, few islands. Opposite of VC,Rg.
+        Ridged:     Medium Swiss cheese, or Crater World.
+        Ping Pong:  Sharp, shattered Swiss cheese. Extreme Crater World.
+
+    D) Perlin
+        F Bm:       Large, merging continents with interesting beaches and small peninsulas
+        Ridged:     Same as D1, but more jagged/crazy with craters and peaks
+        Ping Pong:  Many scattered islands and medium blobby, messy continents
+
+    E) Value Cubic
+        F Bm:       Large continents connected, few breaks or islands
+        Ridged:     99% mountain, few oases if any. Mars perhaps. Opposite of C,Fb.
+        Ping Pong:  Small to Large, completely separated continents, bubbly
+
+    F) Value (Non-Cubic)
+        F Bm:       Blobby continents with scattered islands between
+        Ridged:     Large, connected sandbars and wide basins
+        Ping Pong:  Land and river snaking around each other, very shattered
+
+    Any Non-Fractal:     Very large, smooth blobs of land and water. Very unnatural. All very similar (except C1).
