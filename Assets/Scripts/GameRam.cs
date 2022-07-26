@@ -6,20 +6,42 @@ using UnityEngine;
 public static class GameRam
 {
     public static Planet planet;
+    public static Locale currentLocale;
+    public static class NoiseSettings
+    {
+        public static int mSeed;
+        public static float mFrequency;
+        public static FastNoiseLite.FractalType mFractalType;
+        public static FastNoiseLite.NoiseType mNoiseType;
+        public static int mOctaves;
+        public static float mLacunarity;
+        public static float mGain;
+    }
 
     public static SaveData ToSaveData()
     {
         SaveData newData = new SaveData();
-        newData.planet = planet;
+        newData.planetSeed = NoiseSettings.mSeed;
+        newData.noiseFreq = NoiseSettings.mFrequency;
+        newData.fractalType = NoiseSettings.mFractalType;
+        newData.noiseType = NoiseSettings.mNoiseType;
+        newData.lacunarity = NoiseSettings.mLacunarity;
+        newData.octaves = NoiseSettings.mOctaves;
+        newData.gain = NoiseSettings.mGain;
 
         return newData;
     }
 
     public static void FromSaveData(SaveData data)
     {
-        planet = data.planet;
-        planet.useCustomSeed = true;
+        NoiseSettings.mSeed = data.planetSeed;
+        NoiseSettings.mFrequency = data.noiseFreq;
+        NoiseSettings.mFractalType = data.fractalType;
+        NoiseSettings.mNoiseType = data.noiseType;
+        NoiseSettings.mLacunarity = data.lacunarity;
+        NoiseSettings.mOctaves = data.octaves;
+        NoiseSettings.mGain = data.gain;
 
-        GameObject.Find("PlanetSystem").GetComponent<Generator>().LoadedPlanet(planet);
+        GameObject.Find("World Manager").GetComponent<WorldManager>().LoadedPlanet(planet);
     }
 }

@@ -57,6 +57,14 @@ using FNLfloat = System.Single;
 
 public class FastNoiseLite
 {
+
+    public override string ToString()
+    {
+        string newString;
+        newString = string.Format("{0} {1} {2}", mSeed, mFrequency, mNoiseType);
+        return newString;
+    }
+
     private const short INLINE = 256; // MethodImplOptions.AggressiveInlining;
     private const short OPTIMISE = 512; // MethodImplOptions.AggressiveOptimization;
 
@@ -113,7 +121,7 @@ public class FastNoiseLite
         BasicGrid 
     };
 
-    private enum TransformType3D 
+    public enum TransformType3D 
     {
         None, 
         ImproveXYPlanes, 

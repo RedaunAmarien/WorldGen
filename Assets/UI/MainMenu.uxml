@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=6f67506ac68fe8d41aaab9e1d3629687&amp;type=3#MainMenuStyle" />
+    <ui:VisualElement style="flex-grow: 1; align-items: center; justify-content: center;">
+        <ui:VisualElement name="MapImage" style="left: 50%; top: 0; position: absolute; right: 25px; bottom: 25%; -unity-background-scale-mode: scale-to-fit; flex-grow: 1;" />
+        <ui:VisualElement style="left: 0; right: 0; bottom: 0; position: absolute; top: 75%; flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: center; padding-bottom: 25px;">
+            <ui:VisualElement style="flex-direction: column; align-items: stretch;">
+                <ui:ProgressBar title="Generation Progress" name="GenerationProgress" high-value="1" />
+                <ui:Button text="Generate World" display-tooltip-when-elided="true" name="GenerateWorldButton" tooltip="Generate world land and water." />
+            </ui:VisualElement>
+            <ui:VisualElement>
+                <ui:ProgressBar title="Map Progress" name="MapProgress" high-value="1" />
+                <ui:Button text="Update Map" display-tooltip-when-elided="true" name="RegenMapButton" />
+            </ui:VisualElement>
+            <ui:Button text="Save World" display-tooltip-when-elided="true" name="SaveWorldButton" tooltip="Save current world to file." />
+            <ui:Button text="Load World" display-tooltip-when-elided="true" name="LoadWorldButton" tooltip="Load a world from file." />
+            <ui:Button text="Export Map" display-tooltip-when-elided="true" name="ExportMapButton" tooltip="Export a .png map of the world." />
+            <ui:Button text="Generate Pins" display-tooltip-when-elided="true" name="GeneratePinsButton" tooltip="Generate random cities on the planet surface." />
+            <ui:Button text="Load Location" display-tooltip-when-elided="true" name="LoadLocationButton" tooltip="Choose a location to start a new file in." />
+            <ui:Button text="Imperial Units" display-tooltip-when-elided="true" name="UnitToggleButton" tooltip="Toggle between metric and imperial measurements." />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

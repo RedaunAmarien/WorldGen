@@ -14,7 +14,7 @@ public class Locale
     public Vector3Int uvqCoord;
     public Vector2 longLatCoord;
     public Vector3 xyzCoord;
-    public float avgElevation;
+    public double avgElevation;
     public int timeZone;
     // public enum Biome
     // {
@@ -22,5 +22,5 @@ public class Locale
     // };
     // public Biome biome;
     // public Vector2 baseTempRange;
-    public List<Chunk> chunks = new List<Chunk>();
+    public List<Chunk> chunks;
 }

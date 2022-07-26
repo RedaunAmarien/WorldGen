@@ -1,75 +1,68 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
 using System.Threading.Tasks;
+using System;
 
-public class Generator : MonoBehaviour
+[System.Serializable]
+public class WorldManager : MonoBehaviour
 {
-    [Header("Generation Settings")]
-    public FastNoiseLite noise;
-    public enum NoiseType 
-    { 
-        OpenSimplex2,
-        OpenSimplex2S,
-        Cellular,
-        Perlin,
-        ValueCubic,
-        Value 
-    }
-    public enum FractalType 
-    {
-        None, 
-        FBm, 
-        Ridged, 
-        PingPong, 
-        DomainWarpProgressive, 
-        DomainWarpIndependent 
-    }
-
-    [Header("General Settings")]
-    public bool autoUpdate;
-    public bool useMiles;
-    Texture2D worldMapTex;
-
-    [Header("Preset Locations")]
-    public int randomLocCount;
-    public GameObject locationPrefab;
-
-    [Header("Internal Settings")]
-    public int quadrantCount = 6;
-    public Vector2Int regionCount = new Vector2Int(8,8);
-    public Vector2Int localeCount = new Vector2Int(16, 16);
-    public Vector2Int chunkCount = new Vector2Int(16, 16);
-    public Vector2Int blockCount = new Vector2Int(16, 16);
-    public Vector2Int tileCount = new Vector2Int(16, 16);
-    
-    [Header("References")]
-    public Slider progressBar;
-    public TextMeshProUGUI progressText;
-    [System.NonSerialized]
-    public int progMax, progCurrent;
-    public TextMeshProUGUI mapSizeLabel;
-    public Button[] menuButtons;
-    public RawImage map2d;
+    [Header("Map Settings")]
     public Vector2Int worldMapSize;
     [Min(1)]
     public float worldMapZoom = 1;
     public Vector2 worldMapLocation;
+    public bool imperialUnits = true;
+    Texture2D worldMapTex;
+    public int randomLocCount;
+    public GameObject locationPrefab;
+
+    [Header("Generator Settings")]
+    public bool randomizeSeed;
+    public FastNoiseLite fNLSettings;
+    public int seed;
+    public float frequency;
+    public FastNoiseLite.NoiseType noiseType;
+    public FastNoiseLite.FractalType fractalType;
+    public int octaves;
+    public float lacunarity;
+    public float gain;
+    // public Generate generator;
+
+    //Internal Settings
+    int quadrantCount = 6;
+    Vector2Int regionCount = new Vector2Int(8,8);
+    Vector2Int localeCount = new Vector2Int(16, 16);
+    Vector2Int chunkCount = new Vector2Int(16, 16);
+    Vector2Int blockCount = new Vector2Int(16, 16);
+    Vector2Int tileCount = new Vector2Int(16, 16);
+    
+    [Header("References")]
+    // public Slider progressBar;
+    // [System.NonSerialized]
+    public int progMax;
+    public int progCurrent;
+    public int mapProgMax, mapProgCurrent;
+    // public Label mapSizeLabel;
+    public Button[] menuButtons;
+    // public Image map2d;
     Color[] mapColors, worldMapColors;
     public Gradient elevGrad;
-    public Gradient heightGrad;
+    // public Gradient heightGrad;
+    // public AnimationCurve plainsFlattener;
+    // public bool useFlattener;
     public Renderer mapSphere;
     public GameObject currentPin;
+    WorldUI uI;
 
     //Internal
     [System.NonSerialized]
     public List<GameObject> pins;
     Vector2 mousPos;
     public bool isLocationAllowed;
-    GlobeView globeView;
+    public GlobeView globeView;
     [System.NonSerialized]
     public Vector2Int quadMapSize;
 
@@ -77,34 +70,57 @@ public class Generator : MonoBehaviour
     public Planet planet;
 
     void Start() {
-        globeView = GetComponent<GlobeView>();
-        planet.generator = this;
+        planet.worldManager = this;
         GameRam.planet = planet;
         pins = new List<GameObject>();
+        uI = GetComponent<WorldUI>();
+        fNLSettings = new FastNoiseLite();
+        Generate.fnl = fNLSettings;
     }
 
     public async void GenerateMapButton()
     {
-        foreach (GameObject pin in pins)
+        if (pins != null)
         {
-            Destroy(pin);
+            foreach (GameObject pin in pins)
+            {
+                Destroy(pin);
+            }
+            pins.Clear();
         }
-        pins.Clear();
 
-        foreach (Button button in menuButtons)
+        if (menuButtons != null)
         {
-            button.interactable = false;
+            foreach (Button button in menuButtons)
+            {
+                button.SetEnabled(false);
+            }
+            isLocationAllowed = false;
         }
-        isLocationAllowed = false;
 
         await GenerateWorld();
 
-        foreach (Button button in menuButtons)
+        if (menuButtons != null)
         {
-            button.interactable = true;
+            foreach (Button button in menuButtons)
+            {
+                button.SetEnabled(true);
+            }
+            isLocationAllowed = true;
         }
-        isLocationAllowed = true;
 
+        GameRam.planet = planet;
+    }
+
+    public void UpdateRam()
+    {
+        GameRam.NoiseSettings.mSeed = seed;
+        GameRam.NoiseSettings.mFrequency = frequency;
+        GameRam.NoiseSettings.mFractalType = fractalType;
+        GameRam.NoiseSettings.mNoiseType = noiseType;
+        GameRam.NoiseSettings.mLacunarity = lacunarity;
+        GameRam.NoiseSettings.mOctaves = octaves;
+        GameRam.NoiseSettings.mGain = gain;
         GameRam.planet = planet;
     }
 
@@ -113,26 +129,35 @@ public class Generator : MonoBehaviour
         planet.quadrants = new List<Quadrant>();
 
         // Initialize seed
-        if (!planet.useCustomSeed)
+        if (randomizeSeed)
         {
-            planet.seed = (int)System.DateTime.Now.Ticks;
+            seed = (int)System.DateTime.Now.Ticks;
         }
 
-        Random.InitState(planet.seed);
+        UnityEngine.Random.InitState(seed);
+        fNLSettings.SetSeed(seed);
+        fNLSettings.SetFrequency(frequency);
+        fNLSettings.SetNoiseType(noiseType);
+        fNLSettings.SetFractalType(fractalType);
+        fNLSettings.SetFractalOctaves(octaves);
+        fNLSettings.SetFractalLacunarity(lacunarity);
+        fNLSettings.SetFractalGain(gain);
+
+        UpdateRam();
         
-        InitializeNoise();
+        // GameRam.NoiseSettings = fNLSettings;
 
         planet.minHeight = float.MaxValue;
         planet.maxHeight = float.MinValue;
+        
         quadMapSize.x = regionCount.x * localeCount.x;
         quadMapSize.y = regionCount.y * localeCount.y;
 
         // Initialize progress bar
         progCurrent = 0;
-        progMax = (quadMapSize.x * quadMapSize.y * 6) + (worldMapSize.x * worldMapSize.y);
+        progMax = (quadMapSize.x * quadMapSize.y * 6);
 
         // Generate Quadrants
-        // Debug.Log("Creating Quadrants...");
         List<Task> quadrantTasks = new List<Task>();
         for (int i = 0; i < 6; i++)
         {
@@ -140,37 +165,20 @@ public class Generator : MonoBehaviour
         }
 
         // Generate each region
-        // Debug.LogFormat("Generating {0} regions of size {1}x{2}...", regionTasks.Count, regionSize.x, regionSize.y);
         while (quadrantTasks.Count > 0)
         {
             Task finishedTask = await Task.WhenAny(quadrantTasks);
             quadrantTasks.Remove(finishedTask);
         }
-        // Debug.Log("Finished Quadrants");
 
         foreach (Quadrant quadrant in planet.quadrants)
         {
-            if (quadrant.minHeight < planet.minHeight)
-                planet.minHeight = quadrant.minHeight;
-            if (quadrant.maxHeight > planet.maxHeight)
-                planet.maxHeight = quadrant.maxHeight;
+            planet.minHeight = Mathf.Min(quadrant.minHeight, planet.minHeight);
+            planet.maxHeight = Mathf.Max(quadrant.maxHeight, planet.maxHeight);
         }
 
         await ApplyQuadrants();
         return true;
-    }
-
-    public void InitializeNoise()
-    {
-        noise = new FastNoiseLite(planet.seed);
-        noise.SetFractalOctaves(planet.totalOctaves);
-        noise.SetFractalLacunarity(planet.lacunarity);
-        noise.SetFractalWeightedStrength(planet.noiseStrength);
-        noise.SetFractalGain(planet.persistence);
-        noise.SetFrequency(planet.noiseFrequency);
-        noise.SetFractalType((FastNoiseLite.FractalType)planet.fractalType);
-        noise.SetRotationType3D(FastNoiseLite.RotationType3D.ImproveXYPlanes);
-        noise.SetNoiseType((FastNoiseLite.NoiseType)planet.noiseType);
     }
 
     public async Task<Quadrant> GenerateQuadrant(int index)
@@ -184,7 +192,6 @@ public class Generator : MonoBehaviour
         mapColors = new Color[quadMapSize.x * quadMapSize.y];
 
         // Initialize Regions
-        // Debug.Log("Creating Regions...");
         List<Task> regionTasks = new List<Task>();
         for (int y = 0; y < regionCount.y; y++)
         {
@@ -195,53 +202,51 @@ public class Generator : MonoBehaviour
         }
 
         // Generate each region
-        // Debug.LogFormat("Generating {0} regions of size {1}x{2}...", regionTasks.Count, regionSize.x, regionSize.y);
         while (regionTasks.Count > 0)
         {
             Task finishedTask = await Task.WhenAny(regionTasks);
             regionTasks.Remove(finishedTask);
         }
-        // Debug.Log("Finished Regions");
 
-        if (quadrant.minHeight < planet.minHeight)
-            planet.minHeight = quadrant.minHeight;
-        if (quadrant.maxHeight > planet.maxHeight)
-            planet.maxHeight = quadrant.maxHeight;
+        planet.minHeight = Math.Min(quadrant.minHeight, planet.minHeight);
+        planet.maxHeight = Math.Max(quadrant.maxHeight, planet.maxHeight);
 
-        // Debug.Log(mapMinMax.ToString());
         planet.quadrants.Add(quadrant);
         return quadrant;
     }
 
-    public async Task<Region> GenerateRegion(Quadrant quad, Vector2Int loc)
+    public async Task<Region> GenerateRegion(Quadrant quad, Vector2Int reg)
     {
         // Create region and generate noise
-        // Debug.LogFormat("Region at {0},{1} beginning generation...", loc.x, loc.y);
+        Region region = new Region(reg, quad);
+        region.regionHeights = new float[localeCount.x, localeCount.y];
+        Vector3Int[,] locs = new Vector3Int[localeCount.x, localeCount.y];
 
-        Region region = new Region(loc, quad);
-        region.regionHeights = await GenerateNoise(loc, localeCount, quad.index);
-
-        // Convert noise to elevation colors
-        Color[] regionColors = new Color[localeCount.x * localeCount.y];
         for (int y = 0; y < localeCount.y; y++)
         {
             for (int x = 0; x < localeCount.x; x++)
             {
-                // Update map lowest and highest points.
-                if (region.regionHeights[x,y] > quad.maxHeight)
-                {
-                    quad.maxHeight = region.regionHeights[x,y];
-                    region.maxHeight = region.regionHeights[x,y];
-                }
-                else if (region.regionHeights[x,y] < quad.minHeight)
-                {
-                    quad.minHeight = region.regionHeights[x,y];
-                    region.minHeight = region.regionHeights[x,y];
-                }
+                locs[x,y].x = reg.x * localeCount.x + x;
+                locs[x,y].y = reg.y * localeCount.y + y;
+                locs[x,y].z = quad.index;
+                progCurrent ++;
+                // Vector3 point = await Conversion.Coordinate.UVQtoXYZ(locs[x,y], quadMapSize);
+                // region.regionHeights[x,y] = fNLSettings.GetNoise(point.x, point.y, point.z);
             }
         }
+        // Debug.Log(locs[5,5].ToString());
+        region.regionHeights = await Generate.GetNoise(locs, quadMapSize);
+        // Debug.Log(region.regionHeights[5,5].ToString());
 
-        // Debug.LogFormat("Region {0},{1} finished.\nMax at {2}, Min at {3}. Size of {4}x{5}.", loc.x, loc.y, mapMax, mapMin, size.x, size.y);
+        foreach (float height in region.regionHeights)
+        {
+            // Update map lowest and highest points.
+            quad.minHeight = Math.Min(height, quad.minHeight);
+            quad.maxHeight = Math.Max(height, quad.maxHeight);
+            region.minHeight = Math.Min(height, region.minHeight);
+            region.maxHeight = Math.Max(height, region.maxHeight);
+        }
+
         quad.regions.Add(region);
         return region;
     }
@@ -257,7 +262,7 @@ public class Generator : MonoBehaviour
                 {
                     for (int y = 0; y < localeCount.y; y++)
                     {
-                        float altitude = Mathf.InverseLerp(planet.minHeight, planet.maxHeight, region.regionHeights[x,y]);
+                        float altitude = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)region.regionHeights[x,y]));
                         int pixIndex = (region.coordinates.y * regionCount.y * localeCount.x * localeCount.y) + (y * regionCount.y * localeCount.y) + (region.coordinates.x * localeCount.x) + x;
                         // if (!isHeightMap) mapColors[pixIndex] = elevGrad.Evaluate(altitude);
                         // else mapColors[pixIndex] = heightGrad.Evaluate(altitude);
@@ -273,9 +278,12 @@ public class Generator : MonoBehaviour
             
             quadrant.quadrantMapTex.filterMode = FilterMode.Point;
             quadrant.quadrantMapTex.wrapMode = TextureWrapMode.Clamp;
-            mapSphere.materials[quadrant.index].mainTexture = quadrant.quadrantMapTex;
         }
         await ApplyMap();
+        foreach (Quadrant quadrant in planet.quadrants)
+        {
+            mapSphere.materials[quadrant.index].mainTexture = quadrant.quadrantMapTex;
+        }
         await new WaitForEndOfFrame();
         return true;
     }
@@ -305,66 +313,49 @@ public class Generator : MonoBehaviour
         // Apply separate array to world map
         Debug.LogFormat("Applying world map texture.");
         worldMapTex = new Texture2D(worldMapSize.x, worldMapSize.y);
-        worldMapTex.SetPixels(worldMapColors);
         worldMapTex.filterMode = FilterMode.Point;
         worldMapTex.wrapMode = TextureWrapMode.Clamp;
+        worldMapTex.SetPixels(worldMapColors);
         worldMapTex.Apply();
-        map2d.texture = worldMapTex;
+        // Debug.LogFormat("World map is {1}x{2} or {0} pixels total.", worldMapColors.Length, worldMapTex.width, worldMapTex.height);
+
+        uI.SetMap(worldMapTex);
         await new WaitForEndOfFrame();
         return true;
     }
 
-    public async Task<Color[]> GenerateMapColors(Vector2Int section, Vector2Int range)
+    public async Task<Color[]> GenerateMapColors(Vector2Int texSection, Vector2Int range)
     {
-        Color[] colors = new Color[range.x * range.y];
+        mapProgCurrent = 0;
+        mapProgMax = worldMapSize.x * worldMapSize.y;
+        // Debug.LogFormat("Generating colors for region {0}, {1} of world map.", section.x, section.y);
         for (int y = 0; y < range.y; y++)
         {
+            float py = texSection.y * range.y + y;
             for (int x = 0; x < range.x; x++)
             {
-                int px = section.x * range.x + x;
-                int py = section.y * range.y + y;
-                float lng = (float)(px / worldMapSize.x * 360 / worldMapZoom) - (180/worldMapZoom) + worldMapLocation.x;
-                float lat = (float)(py / worldMapSize.y * 180 / worldMapZoom) - (90/worldMapZoom) + worldMapLocation.y;
+                float px = texSection.x * range.x + x;
+                Vector2 lnglat;
+                lnglat.x = (px / worldMapSize.x) * (360 / worldMapZoom) + (-180 / worldMapZoom);
+                lnglat.y = (py / worldMapSize.y) * (180 / worldMapZoom) +  (-90 / worldMapZoom);
 
-                Vector3 point = await Conversion.Coordinate.LLtoXYZ(lng, lat);
-                float height = noise.GetNoise(point.x, point.y, point.z);
-                height = Mathf.InverseLerp(planet.minHeight, planet.maxHeight, height);
-                progCurrent ++;
-                worldMapColors[py * worldMapSize.x + px] = elevGrad.Evaluate(height);
+                double height = await Generate.GetNoise(lnglat, worldMapLocation);
+
+                // Vector3 point = await Conversion.Coordinate.LLtoXYZ(lnglat.x, lnglat.y);
+
+                // point = Quaternion.AngleAxis(worldMapLocation.y, Vector3.right) * point;
+                // point = Quaternion.AngleAxis(-worldMapLocation.x, Vector3.up) * point;
+
+                // float height = await Generate.GetNoise(point);
+                // Debug.LogFormat("{0} => {1} & {2} => {3}: {4} at {5}", px, lng, py, lat, point.ToString(), height);
+                height = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)height));
+                mapProgCurrent ++;
+                worldMapColors[Mathf.FloorToInt(py) * worldMapSize.x + Mathf.FloorToInt(px)] = elevGrad.Evaluate(((float)height));
             }
             // Debug.LogFormat("Analyzed part of row {0}.", y);
         }
-        return colors;
-    }
-
-    public async Task<float[,]> GenerateNoise(Vector2Int loc, Vector2Int size, int quad)
-    {
-        // Convert each Lat/Long pixel in region into XYZ location and generate 3D noise
-        float[,] noiseMatrix = new float[size.x, size.y];
-
-        for (int y = 0; y < size.y; y++)
-        {
-            int yReal = size.y * loc.y + y;
-            for (int x = 0; x < size.x; x++)
-            {
-                int xReal = size.x * loc.x + x;
-
-                int xCoord = Mathf.FloorToInt(xReal);
-                int yCoord = Mathf.FloorToInt(yReal);
-
-                Vector3 newCoord = await Conversion.Coordinate.UVQtoXYZ(new Vector3Int(xCoord, yCoord, quad), quadMapSize);
-
-                float height;
-                if (planet.isMode2D) height = noise.GetNoise(xCoord, yCoord);
-                else height = noise.GetNoise(newCoord.x, newCoord.y, newCoord.z);
-                // height *= octAmp;
-
-                progCurrent ++;
-                
-                noiseMatrix[x,y] = height;
-            }
-        }
-        return noiseMatrix;
+        // Debug.LogFormat("Generated colors for region {0}, {1} of size {2} world map.", section.x, section.y, colors.Length);
+        return null;
     }
 
     void OnPosition(InputValue val)
@@ -386,7 +377,7 @@ public class Generator : MonoBehaviour
             int u = Mathf.FloorToInt(hit.textureCoord.x * quadMapSize.x);
             int v = Mathf.FloorToInt(hit.textureCoord.y * quadMapSize.y);
 
-            MeshFilter mf = (MeshFilter)gameObject.GetComponentInChildren(typeof(MeshFilter));
+            MeshFilter mf = (MeshFilter)globeView.gameObject.GetComponentInChildren(typeof(MeshFilter));
             Mesh mesh = mf.mesh;
      
             int totalSubMeshes = mesh.subMeshCount;
@@ -426,14 +417,14 @@ public class Generator : MonoBehaviour
 
         for (int i = 0; i < randomLocCount; i++)
         {
-            int q = Random.Range(0,6);
-            int u = Random.Range(0,quadMapSize.x);
-            int v = Random.Range(0,quadMapSize.y);
+            int q = UnityEngine.Random.Range(0,6);
+            int u = UnityEngine.Random.Range(0,quadMapSize.x);
+            int v = UnityEngine.Random.Range(0,quadMapSize.y);
             while (!await GenerateLocation(new Vector3Int(u, v, q), true))
             {
-                q = Random.Range(0,6);
-                u = Random.Range(0,quadMapSize.x);
-                v = Random.Range(0,quadMapSize.y);
+                q = UnityEngine.Random.Range(0,6);
+                u = UnityEngine.Random.Range(0,quadMapSize.x);
+                v = UnityEngine.Random.Range(0,quadMapSize.y);
             }
         }
     }
@@ -450,10 +441,10 @@ public class Generator : MonoBehaviour
         loca.longLatCoord = await Conversion.Coordinate.XYZtoLL(loca.xyzCoord);
         loca.timeZone = Mathf.RoundToInt((float)loca.longLatCoord.x / 360 * 24);
 
-        float elevation = 0;
-        elevation = noise.GetNoise(loca.xyzCoord.x, loca.xyzCoord.y, loca.xyzCoord.z);
-        elevation = Mathf.InverseLerp(planet.minHeight, planet.maxHeight, elevation);
-        elevation = Mathf.Lerp(planet.minElevation, planet.maxElevation, elevation);
+        double elevation = 0;
+        elevation = await Generate.GetNoise(loca.xyzCoord);
+        elevation = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)elevation));
+        elevation = Mathf.Lerp(planet.minElevation, planet.maxElevation, ((float)elevation));
         if (elevation < 0)
         {
             Destroy(pin);
@@ -467,35 +458,30 @@ public class Generator : MonoBehaviour
 
         if (genName)
         {
-            int r = Random.Range(3,10);
+            int r = UnityEngine.Random.Range(3,10);
             string name = string.Empty;
             char[] con = new char[]
                 {'b','c','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','z',/*'ɴ','\'','ŋ','β','ʃ','χ'*/};
             char[] vow = new char[]
                 {'a','e','i','o','u','y',/*'á','é','í','ó','ú','ü','æ','ɪ','œ','ʏ'*/};
-            // string[] swears = new string[]
-            //     {"Cum", "Penis", "Fuk", "Fuc", "Fuq", "Cuc", "Cuk", "Cuq", "Nig", "Niga", "Nigar", "Niger", "Pusy", "Pusi"};
             for (int i = 0; i < r; i++)
             {
                 if (i == 0)
-                    name += (char)Random.Range('A','Z'+1);
+                    name += (char)UnityEngine.Random.Range('A','Z'+1);
                 else if (i % 2 == 0)
-                    name += con[Random.Range(0,con.Length)];
+                    name += con[UnityEngine.Random.Range(0,con.Length)];
                 else
-                    name += vow[Random.Range(0,vow.Length)];
+                    name += vow[UnityEngine.Random.Range(0,vow.Length)];
             }
-            // for (int i = 0; i < swears.Length; i++)
-            // {
-            //     if (name == swears[i]) name = "[REDACTED]";
-            // }
             loca.placeName = name;
         }
         else
         {
-            loca.placeName = string.Format("{0:n2}°{1} {2:n2}°{3}",Mathf.Abs(loca.longLatCoord.y), loca.longLatCoord.y > 0 ? "N" : "S", Mathf.Abs(loca.longLatCoord.x), loca.longLatCoord.x > 0 ? "E" : "W");
+            loca.placeName = string.Format("{0:n2}°{1} {2:n2}°{3}", Math.Abs(loca.longLatCoord.y), loca.longLatCoord.y > 0 ? "N" : "S", Math.Abs(loca.longLatCoord.x), loca.longLatCoord.x > 0 ? "E" : "W");
         }
         // loca.placeName = string.Format("{0}\n{1}\n{2}", loca.longLatCoord.ToString(), loca.xyzCoord.ToString(), loca.uvqCoord.ToString());
         pin.gameObject.name = loca.placeName;
+        currentPin = pin;
 
         int regIndex = Mathf.FloorToInt((float)(uvqCoord.y/localeCount.y) * regionCount.x + (float)(uvqCoord.x/localeCount.x));
         // Debug.LogFormat("Creating pin at {0},{1} (region {3}) on quadrant {2}.", uvqCoord.x, uvqCoord.y, uvqCoord.z, regIndex);
@@ -510,14 +496,24 @@ public class Generator : MonoBehaviour
         return true;
     }
 
-    void LateUpdate() {
-        if (progMax > 0) progressBar.value = ((float)progCurrent / (float)progMax);
-        progressText.text = string.Format("{0:p1}", (float)progCurrent / progMax);
+    public async void RegenMapButton()
+    {
+        await GenerateMapColors(new Vector2Int(0,0), new Vector2Int(worldMapSize.x, worldMapSize.y));
     }
 
     public void SaveMap()
     {
         FileIO.SaveFile();
+    }
+
+    public void ExportMap()
+    {
+        FileIO.ExportMap(worldMapTex);
+    }
+
+    public void LoadLocation()
+    {
+        currentPin.GetComponent<LocalePin>().ChooseLocation();
     }
 
     public void LoadedPlanet(Planet p)
@@ -527,42 +523,31 @@ public class Generator : MonoBehaviour
 
     public void LoadMap()
     {
-        isLocationAllowed = false;
+        // isLocationAllowed = false;
         foreach (GameObject pin in pins)
         {
             Destroy(pin);
-            pins.Remove(pin);
         }
+        pins.Clear();
 
         GameRam.FromSaveData(FileIO.LoadFile());
         GenerateMapButton();
     }
 
-    public void ToggleMetric(TextMeshProUGUI text)
+    public void ToggleImperial()
     {
-        if (useMiles)
-        {
-            useMiles = false;
-            text.text = "Metric Units";
-            OnValidate();
-        }
-        else
-        {
-            useMiles = true;
-            text.text = "Imperial Units";
-            OnValidate();
-        }
+        imperialUnits = !imperialUnits;
     }
 
-    void OnValidate()
-    {
-        float globeRadius = 6378.1f * planet.globeScale;
-        float fullMapWidth = globeRadius * 2 * Mathf.PI;
-        float mapWidthMiles = fullMapWidth * 0.621371f;
-        mapSizeLabel.text = string.Format("Map Width: {0} {2} (across center only)\nMap Height: {1} {2}", useMiles ? mapWidthMiles : fullMapWidth, useMiles ? mapWidthMiles / 2 : fullMapWidth / 2, useMiles ? "mi": "km");
+    // void OnValidate()
+    // {
+    //     float globeRadius = 6378.1f * planet.globeScale;
+    //     float fullMapWidth = globeRadius * 2 * Mathf.PI;
+    //     float mapWidthMiles = fullMapWidth * 0.621371f;
+    //     // mapSizeLabel.text = string.Format("Map Width: {0} {2} (across center only)\nMap Height: {1} {2}", useMiles ? mapWidthMiles : fullMapWidth, useMiles ? mapWidthMiles / 2 : fullMapWidth / 2, useMiles ? "mi": "km");
 
-        if (autoUpdate) {
-            GenerateMapButton();
-        }
-    }
+    //     if (autoUpdate) {
+    //         GenerateMapButton();
+    //     }
+    // }
 }

@@ -21,9 +21,6 @@ public static class Conversion
 
         public static async Task<Vector3> LLtoXYZ (float lng, float lat)
         {
-            // Rotate to proper origin
-            lng -= 180;
-
             // Convert to radians
             lat *= Mathf.Deg2Rad;
             lng *= -Mathf.Deg2Rad;
@@ -41,8 +38,8 @@ public static class Conversion
         public static async Task<Vector3> UVQtoXYZ (Vector3Int uvqCoord, Vector2Int quadMapSize)
         {
             // Force center of quadrant to be 0,0 by default and normalize between -1 and 1.
-            float px = (uvqCoord.x - quadMapSize.x / 2f) / (quadMapSize.x / 2f);
-            float py = (uvqCoord.y - quadMapSize.y / 2f) / (quadMapSize.y / 2f);
+            float px = ((float)uvqCoord.x - quadMapSize.x / 2f) / (quadMapSize.x / 2f);
+            float py = ((float)uvqCoord.y - quadMapSize.y / 2f) / (quadMapSize.y / 2f);
 
             // Initialize offset for quadrant.
             Vector3 newCoord = Vector3.zero;
@@ -82,12 +79,60 @@ public static class Conversion
 
                 default:
                     Debug.LogError("Conversion.Coordinate.UVQtoXYZ failed. Quadrant " + uvqCoord.z + " not recognized.");
-                break;
+                return Vector3.zero;
             }
+            return newCoord.normalized;
+        }
+        public static async Task<Vector3> SubUVQtoXYZ (Vector3 subUvqCoord, Vector2Int localeUV)
+        {
+            // Force center of quadrant to be 0,0 by default and normalize between -1 and 1.
+            float lx = ((float)localeUV.x - 64) / 64;
+            float ly = ((float)localeUV.y - 64) / 64;
 
-            Vector3 result = newCoord.normalized;
-            await new WaitForEndOfFrame();
-            return result;
+            float px = (subUvqCoord.x - 0.00025f) / 0.00025f;
+            float py = (subUvqCoord.y - 0.00025f) / 0.00025f;
+
+            // Initialize offset for quadrant.
+            Vector3 newCoord = Vector3.zero;
+
+            switch (subUvqCoord.z)
+            {
+                case 0: //Origin Face
+                    newCoord.x = 1;
+                    newCoord.y = py;
+                    newCoord.z = px;
+                break;
+                case 1: //Western Face
+                    newCoord.x = px;
+                    newCoord.y = py;
+                    newCoord.z = -1;
+                break;
+                case 2: //Dateline Face
+                    newCoord.x = -1;
+                    newCoord.y = py;
+                    newCoord.z = -px;
+                break;
+                case 3: //Eastern Face
+                    newCoord.x = -px;
+                    newCoord.y = py;
+                    newCoord.z = 1;
+                break;
+                case 4: //Southern Face
+                    newCoord.x = py;
+                    newCoord.y = -1;
+                    newCoord.z = px;
+                break;
+                case 5: //Northern Face
+                    newCoord.x = -py;
+                    newCoord.y = 1;
+                    newCoord.z = px;
+                break;
+
+                default:
+                    Debug.LogError("Conversion.Coordinate.UVQtoXYZ failed. Quadrant " + subUvqCoord.z + " not recognized.");
+                return Vector3.zero;
+            }
+            return newCoord.normalized;
         }
 
         // public static async Task<Vector2> UVQtoLL (Vector3Int uvqCoord, Vector2Int quadMapSize)
