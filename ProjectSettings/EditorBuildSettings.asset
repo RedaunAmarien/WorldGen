@@ -12,6 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Location.unity
     guid: 232155fae34bc9d4eba0f61632d1e5f7
   - enabled: 1
-    path: Assets/Scenes/OldCityMap.unity
+    path: Assets/Scenes/OldCityMap/OldCityMap.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: 30d3c2dd7b038f1439000b33432ca7cf, type: 2}

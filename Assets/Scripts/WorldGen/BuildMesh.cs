@@ -113,7 +113,7 @@ public class BuildMesh : MonoBehaviour
 
     void UpdateMesh()
     {
-        Debug.LogFormat("{0} verts, {1} triIndices.", verts.Length, tris.Length);
+        //Debug.LogFormat("{0} verts, {1} triIndices.", verts.Length, tris.Length);
         mesh.Clear();
         mesh.vertices = verts;
         mesh.triangles = tris;

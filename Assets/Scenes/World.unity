@@ -1053,7 +1053,7 @@ MonoBehaviour:
   imperialUnits: 1
   randomLocCount: 32
   locationPrefab: {fileID: 7238227684960008694, guid: 68d8877f372667046823817d0cbecfba, type: 3}
-  randomizeSeed: 0
+  randomizeSeed: 1
   seed: 0
   frequency: 1
   noiseType: 1

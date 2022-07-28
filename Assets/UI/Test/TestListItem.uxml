@@ -1,5 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement style="height: 41px; background-color: rgba(0, 0, 0, 0.12); align-items: flex-start; justify-content: center; padding-left: 10px;">
-        <ui:Label text="Label" display-tooltip-when-elided="true" name="CharacterName" style="-unity-font-style: bold; font-size: 18px;" />
-    </ui:VisualElement>
-</ui:UXML>

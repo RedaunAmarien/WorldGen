@@ -72,6 +72,7 @@ public class WorldManager : MonoBehaviour
     void Start() {
         planet.worldManager = this;
         GameRam.planet = planet;
+        GameRam.worldMapCenter = worldMapLocation;
         pins = new List<GameObject>();
         uI = GetComponent<WorldUI>();
         fNLSettings = new FastNoiseLite();
@@ -272,7 +273,7 @@ public class WorldManager : MonoBehaviour
             }
 
             // Apply color array
-            Debug.Log("Applying globe textures.");
+            //Debug.Log("Applying globe textures.");
             quadrant.quadrantMapTex.SetPixels(mapColors);
             quadrant.quadrantMapTex.Apply();
             
@@ -311,7 +312,7 @@ public class WorldManager : MonoBehaviour
         }
         
         // Apply separate array to world map
-        Debug.LogFormat("Applying world map texture.");
+        //Debug.LogFormat("Applying world map texture.");
         worldMapTex = new Texture2D(worldMapSize.x, worldMapSize.y);
         worldMapTex.filterMode = FilterMode.Point;
         worldMapTex.wrapMode = TextureWrapMode.Clamp;
@@ -448,7 +449,7 @@ public class WorldManager : MonoBehaviour
         if (elevation < 0)
         {
             Destroy(pin);
-            Debug.Log("Failed creation of location due to water.");
+            //Debug.Log("Failed creation of location due to water.");
             return false;
         }
         loca.avgElevation = elevation;

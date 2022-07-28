@@ -6,7 +6,21 @@ using UnityEngine;
 public class Cell
 {
     public Vector2 longLatCoord;
+    public Vector2Int index;
     [System.NonSerialized]
     public Chunk pChunk;
-    public List<Tile> tiles;
+    [SerializeField] private List<Tile> tiles;
+    public GameObject cellPlane;
+
+    public Cell(Vector2Int newIndex, Chunk parent)
+    {
+        index = newIndex;
+        pChunk = parent;
+        tiles = new List<Tile>();
+    }
+
+    public void AddTile(Tile tile)
+    {
+        tiles.Add(tile);
+    }
 }

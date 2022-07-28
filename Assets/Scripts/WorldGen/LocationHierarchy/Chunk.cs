@@ -6,7 +6,20 @@ using UnityEngine;
 public class Chunk
 {
     public Vector2 longLatCoord;
+    public Vector2Int index;
     [System.NonSerialized]
     public Locale pLocale;
-    public List<Cell> cells;
+    [SerializeField] private List<Cell> cells;
+
+    public Chunk (Vector2Int newIndex, Locale parent)
+    {
+        index = newIndex;
+        pLocale = parent;
+        cells = new List<Cell>();
+    }
+
+    public void AddCell(Cell cell)
+    {
+        cells.Add(cell);
+    }
 }

@@ -7,6 +7,8 @@ public static class GameRam
 {
     public static Planet planet;
     public static Locale currentLocale;
+    public static Vector2 worldMapCenter;
+
     public static class NoiseSettings
     {
         public static int mSeed;
