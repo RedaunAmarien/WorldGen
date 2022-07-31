@@ -23,4 +23,19 @@ public class Locale
     // public Biome biome;
     // public Vector2 baseTempRange;
     public List<Chunk> chunks;
+
+    public Chunk GetChunk(Vector2Int index)
+    {
+        for (int i = 0; i < chunks.Count; i++)
+        {
+            Debug.LogFormat("Testing chunk {0} for {1}...", chunks[i].index, index);
+            if (chunks[i].index == index)
+            {
+                Debug.LogFormat("Chunk {0} found.", index);
+                return chunks[i];
+            }
+        }
+        Debug.LogWarningFormat("Chunk {0} not found.", index);
+        return null;
+    }
 }

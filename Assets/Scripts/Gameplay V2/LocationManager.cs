@@ -15,6 +15,7 @@ public class LocationManager : MonoBehaviour
     private bool generated;
     [SerializeField] private GameObject cellObjectTemplate;
     [SerializeField] private Transform landRoot;
+    float progress, progmax;
     //[SerializeField] private float zoomLacunarity;
 
     void Awake()
@@ -36,8 +37,45 @@ public class LocationManager : MonoBehaviour
             GenerateLand();
     }
 
+    private void Update()
+    {
+        if (progress % 10 == 0)
+            Debug.Log(progress * 100);
+        
+    }
+
+    public int GetTileY(Vector2Int chunkIndex, Vector2Int cellIndex, Vector2Int tileIndex)
+    {
+        Chunk chunky = locale.GetChunk(chunkIndex);
+        if (chunky == null)
+        {
+            Debug.LogErrorFormat("Chunk {0} returned as null.", chunkIndex);
+            return 0;
+        }
+        Cell celly = chunky.GetCell(cellIndex);
+        if (celly == null)
+        {
+            Debug.LogErrorFormat("Cell {0} returned as null.", cellIndex);
+            return 0;
+        }
+        Tile tiley = celly.GetTile(tileIndex);
+        if (tiley == null)
+        {
+            Debug.LogErrorFormat("Tile {0} returned as null.", tileIndex);
+            return 0;
+        }
+        float eve = tiley.elevation;
+        float inv = Mathf.InverseLerp(GameRam.planet.minHeight, GameRam.planet.maxHeight, eve);
+        float mtEve = Mathf.Lerp(GameRam.planet.minElevation, GameRam.planet.maxElevation, inv);
+        int y = (int)System.Math.Round(mtEve - locale.avgElevation);
+        Debug.LogFormat("Elevation {0}, Y {1},\nroot height {2}, interpolated height {3}, MeterHeight {4}.", eve, y, locale.avgElevation, inv, mtEve);
+        return y;
+    }
+
     void GenerateLand()
     {
+        progress = 0;
+        progmax = chunkStartCount * chunkStartCount * cellCount * cellCount * tileCount * tileCount;
         //Debug.LogFormat("Location {0} at {1}.", locale.placeName, locale.longLatCoord);
         //Debug.LogFormat("Seed is {0}, size is {1}², res is {2}².", GameRam.NoiseSettings.mSeed, "!!!", chunkCount * cellCount * tileCount);
         //GameRam.NoiseSettings.mLacunarity = zoomLacunarity;
@@ -54,7 +92,7 @@ public class LocationManager : MonoBehaviour
                 GenerateChunk(newChunk);
             }
         }
-
+        Destroy(cellObjectTemplate);
         //Debug.LogFormat("Height MinMax: {0}–{1}", GameRam.planet.minHeight, GameRam.planet.maxHeight);
     }
 
@@ -88,6 +126,7 @@ public class LocationManager : MonoBehaviour
         cell.cellPlane = Instantiate(cellObjectTemplate, new Vector3(
             cell.pChunk.index.x * cellStartCount * 200 + cell.index.x * 200, 0, cell.pChunk.index.y * cellStartCount * 200 + cell.index.y * 200),
             Quaternion.identity, landRoot);
+        //cell.cellPlane.GetComponent<Mesh>().vertices = new Vector3[0];
 
         Texture2D newTex = new Texture2D(tileCount, tileCount);
         Color[] newcolors = new Color[tileCount * tileCount];
@@ -136,6 +175,7 @@ public class LocationManager : MonoBehaviour
         }
 
         tile.pCell.AddTile(tile);
+        progress += 1 / progmax;
         return col;
         //Debug.LogFormat("Finished Generation of Tile {0}.", tile.index.ToString());
     }

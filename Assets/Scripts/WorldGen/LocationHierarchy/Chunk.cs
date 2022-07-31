@@ -22,4 +22,14 @@ public class Chunk
     {
         cells.Add(cell);
     }
+
+    public Cell GetCell(Vector2Int index)
+    {
+        for (int i = 0; i < cells.Count; i++)
+        {
+            if (cells[i].index == index)
+                return cells[i];
+        }
+        return null;
+    }
 }

@@ -23,4 +23,14 @@ public class Cell
     {
         tiles.Add(tile);
     }
+
+    public Tile GetTile(Vector2Int index)
+    {
+        for (int i = 0; i < tiles.Count; i++)
+        {
+            if (tiles[i].index == index)
+                return tiles[i];
+        }
+        return null;
+    }
 }
