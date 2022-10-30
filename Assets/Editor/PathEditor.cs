@@ -145,7 +145,7 @@ public class PathEditor : Editor
             Handles.color = (i % 3 == 0) ? creator.anchorCol : creator.controlCol;
             float size = (i % 3 == 0) ? creator.anchorDiameter : creator.controlDiameter;
             Handles.CapFunction capType = (i % 3 == 0) ? creator.anchorCap : creator.controlCap ;
-            Vector3 newPos = Handles.FreeMoveHandle(Path[i], Quaternion.identity, size, Vector3.zero, capType);
+            var fmh_148_62_637960683745182625 = Quaternion.identity; Vector3 newPos = Handles.FreeMoveHandle(Path[i], size, Vector3.zero, capType);
             if (Path[i] != newPos)
             {
                 Undo.RecordObject(creator, "Move Point");
