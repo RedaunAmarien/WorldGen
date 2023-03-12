@@ -11,7 +11,8 @@
                     "id": "c4a727d6-df80-4b2e-b61c-f385441d3c9c",
                     "expectedControlType": "Vector2",
                     "processors": "InvertVector2(invertY=false)",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Zoom",
@@ -19,7 +20,8 @@
                     "id": "efd34b5d-c564-4109-a48d-6e08bc686bc5",
                     "expectedControlType": "Axis",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Locate",
@@ -27,7 +29,8 @@
                     "id": "59c7eccb-0e0e-496a-83e4-0f1648b9b363",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press"
+                    "interactions": "Press",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Position",
@@ -35,7 +38,8 @@
                     "id": "123cb89d-d9f5-4aa6-8c2f-802307f21942",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -165,7 +169,7 @@
                     "id": "29f027c4-f79f-4ade-9dae-80fea7ffd3e2",
                     "path": "<Gamepad>/leftStick",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone",
                     "groups": "",
                     "action": "Orbit",
                     "isComposite": false,

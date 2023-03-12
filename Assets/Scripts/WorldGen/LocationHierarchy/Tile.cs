@@ -5,16 +5,15 @@ using UnityEngine;
 [System.Serializable]
 public class Tile
 {
-    public Vector2 longLatCoord;
-    public Vector3 subUvqCoord;
+    public Coordinates coordinates;
     public Vector2Int index;
     [System.NonSerialized]
-    public Cell pCell;
+    public Cell parentCell;
     public float elevation;
 
     public Tile(Vector2Int newIndex, Cell parent)
     {
         index = newIndex;
-        pCell = parent;
+        parentCell = parent;
     }
 }

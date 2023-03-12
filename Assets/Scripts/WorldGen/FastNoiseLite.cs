@@ -766,7 +766,7 @@ public class FastNoiseLite
     }
 
 
-    // Noise Coordinate Transforms (frequency, and possible skew or rotation)
+    // Noise Coordinates Transforms (frequency, and possible skew or rotation)
 
     [MethodImpl(INLINE)]
     private void TransformNoiseCoordinate(ref FNLfloat x, ref FNLfloat y)
@@ -860,7 +860,7 @@ public class FastNoiseLite
     }
 
 
-    // Domain Warp Coordinate Transforms
+    // Domain Warp Coordinates Transforms
 
     [MethodImpl(INLINE)]
     private void TransformDomainWarpCoordinate(ref FNLfloat x, ref FNLfloat y)

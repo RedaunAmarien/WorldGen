@@ -8,20 +8,12 @@ using System.Threading.Tasks;
 public class Locale
 {
     [System.NonSerialized]
-    public Region pRegion;
+    public Region parentRegion;
     public string placeName;
     public string description;
-    public Vector3Int uvqCoord;
-    public Vector2 longLatCoord;
-    public Vector3 xyzCoord;
+    public Coordinates coordinates;
     public double avgElevation;
     public int timeZone;
-    // public enum Biome
-    // {
-    //     Tropical, Temperate, Taiga, Tundra, Highland
-    // };
-    // public Biome biome;
-    // public Vector2 baseTempRange;
     public List<Chunk> chunks;
 
     public Chunk GetChunk(Vector2Int index)

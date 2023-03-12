@@ -131,3 +131,21 @@ The following packages were updated:
   com.unity.2d.spriteshape from version 8.0.0 to 8.0.1
   com.unity.collab-proxy from version 1.17.1 to 1.17.2
   com.unity.inputsystem from version 1.4.1 to 1.4.3
+
+=== Sat Mar 11 18:32:13 2023
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.2d.animation from version 8.0.5 to 9.0.1
+  com.unity.2d.pixel-perfect from version 5.0.1 to 5.0.3
+  com.unity.2d.psdimporter from version 7.0.2 to 8.0.2
+  com.unity.2d.spriteshape from version 8.0.1 to 9.0.1
+  com.unity.2d.tilemap.extras from version 3.0.2 to 3.0.3
+  com.unity.ai.navigation from version 1.0.0-exp.4 to 1.1.1
+  com.unity.collab-proxy from version 1.17.2 to 2.0.0
+  com.unity.ide.visualstudio from version 2.0.16 to 2.0.17
+  com.unity.inputsystem from version 1.4.3 to 1.5.0
+  com.unity.timeline from version 1.7.1 to 1.7.3
+  com.unity.visualscripting from version 1.7.8 to 1.8.0

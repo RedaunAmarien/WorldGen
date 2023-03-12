@@ -22,14 +22,16 @@ public static class GameRam
 
     public static SaveData ToSaveData()
     {
-        SaveData newData = new SaveData();
-        newData.planetSeed = NoiseSettings.mSeed;
-        newData.noiseFreq = NoiseSettings.mFrequency;
-        newData.fractalType = NoiseSettings.mFractalType;
-        newData.noiseType = NoiseSettings.mNoiseType;
-        newData.lacunarity = NoiseSettings.mLacunarity;
-        newData.octaves = NoiseSettings.mOctaves;
-        newData.gain = NoiseSettings.mGain;
+        SaveData newData = new()
+        {
+            planetSeed = NoiseSettings.mSeed,
+            noiseFreq = NoiseSettings.mFrequency,
+            fractalType = NoiseSettings.mFractalType,
+            noiseType = NoiseSettings.mNoiseType,
+            lacunarity = NoiseSettings.mLacunarity,
+            octaves = NoiseSettings.mOctaves,
+            gain = NoiseSettings.mGain
+        };
 
         return newData;
     }
