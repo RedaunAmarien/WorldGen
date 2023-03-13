@@ -21,8 +21,8 @@ public class GlobeView : MonoBehaviour
     public TextMeshProUGUI dateText;
     Vector2 inputVal;
     float zoomVal;
-    public float minZoom;
-    public float maxZoom;
+    //public float minZoom = 0.1f;
+    //public float maxZoom = 8;
     public bool useGlenriCalendar;
     public WorldTime currentTime;
     // public WorldTime startTime;
@@ -58,9 +58,9 @@ public class GlobeView : MonoBehaviour
         // Move view of whole system
         planetParent.transform.Rotate(new Vector3(0, orbitSpeed * Time.deltaTime * inputVal.x, 0), Space.Self);
         planetParent.transform.Rotate(new Vector3(orbitSpeed * Time.deltaTime * inputVal.y, 0, 0), Space.World);
-        planetParent.transform.localScale += Vector3.one * zoomSpeed * Time.deltaTime * zoomVal;
-        if (planetParent.transform.localScale.x < minZoom) planetParent.transform.localScale = Vector3.one * minZoom;
-        if (planetParent.transform.localScale.x > maxZoom) planetParent.transform.localScale = Vector3.one * maxZoom;
+        //planetParent.transform.localScale += Vector3.one * zoomSpeed * Time.deltaTime * zoomVal;
+        //if (planetParent.transform.localScale.x < minZoom) planetParent.transform.localScale = Vector3.one * minZoom;
+        //if (planetParent.transform.localScale.x > maxZoom) planetParent.transform.localScale = Vector3.one * maxZoom;
 
         // Set rotation value of planet for time-based shenanigans
         if (isRotating) yearProgress += daysPerSecond / currentTime.daysInYear * Time.deltaTime;
@@ -70,8 +70,8 @@ public class GlobeView : MonoBehaviour
         planet.transform.localRotation = Quaternion.Euler(0, -planetRotY, 0);
         
         // Offset Sun based on year
-        sunRotX = tropicsLatitude * Mathf.Sin((float)yearProgress*2*Mathf.PI);
-        sunParent.transform.localRotation = Quaternion.Euler(sunRotX, sunParent.transform.rotation.y, sunParent.transform.rotation.z);
+        //sunRotX = tropicsLatitude * Mathf.Sin((float)yearProgress*2*Mathf.PI);
+        //sunParent.transform.localRotation = Quaternion.Euler(sunRotX, sunParent.transform.rotation.y, sunParent.transform.rotation.z);
     }
 
     void LateUpdate()

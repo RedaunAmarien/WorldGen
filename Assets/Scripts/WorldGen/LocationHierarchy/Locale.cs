@@ -10,6 +10,7 @@ public class Locale
     [System.NonSerialized]
     public Region parentRegion;
     public string placeName;
+    [Multiline]
     public string description;
     public Coordinates coordinates;
     public double avgElevation;

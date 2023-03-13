@@ -9,7 +9,8 @@ public class Region
     [System.NonSerialized]
     public Quadrant parentQuadrant;
     public float[,] regionHeights;
-    public float minHeight, maxHeight;
+    public float minHeight;
+    public float maxHeight;
     public List<Locale> locales = new();
     public Region(Vector2Int location, Quadrant quad)
     {

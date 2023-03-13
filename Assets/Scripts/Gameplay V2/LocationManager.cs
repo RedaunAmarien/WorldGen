@@ -7,15 +7,30 @@ using System.Linq;
 public class LocationManager : MonoBehaviour
 {
     [SerializeField] private Locale locale;
-    [SerializeField] private int chunkCount, chunkStartCount, cellCount, cellStartCount, tileCount;
-    [SerializeField] private int chunkMSize, cellMSize, tileMSize;
+    [Tooltip("Chunks per Locale along one edge.")]
+    [SerializeField] private int chunkCount;
+    [Tooltip("Cells per Chunk along one edge.")]
+    [SerializeField] private int cellCount;
+    [Tooltip("Tiles per Cell along one edge.")]
+    [SerializeField] private int tileCount;
+    [Tooltip("Number of Chunks to render.")]
+    [SerializeField] private int chunkStartCount;
+    [Tooltip("Number of Cells to render.")]
+    [SerializeField] private int cellStartCount;
+    [Tooltip("Length of one edge of a Chunk in meters.")]
+    [SerializeField] private int chunkSizeMeters;
+    [Tooltip("Length of one edge of a Cell in meters.")]
+    [SerializeField] private int cellSizeMeters;
+    [Tooltip("Length of one edge of a Tile in meters.")]
+    [SerializeField] private int tileSizeMeters;
     private readonly float degreeSize = 40000000 / 360.0f;
     [SerializeField] private Gradient elevationGradient;
     private bool abort = false;
     private readonly bool generated;
     [SerializeField] private GameObject cellObjectTemplate;
     [SerializeField] private Transform landRoot;
-    float progress, progressMax;
+    float progress;
+    float progressMax;
     //[SerializeField] private float zoomLacunarity;
 
     void Awake()
@@ -39,9 +54,8 @@ public class LocationManager : MonoBehaviour
 
     private void Update()
     {
-        if (progress % 10 == 0)
+        if (progress % 10 == 0 && !abort)
             Debug.Log(progress * 100);
-
     }
 
     public int GetTileY(Vector2Int chunkIndex, Vector2Int cellIndex, Vector2Int tileIndex)
@@ -74,7 +88,7 @@ public class LocationManager : MonoBehaviour
     void GenerateLand()
     {
         progress = 0;
-        progressMax = chunkStartCount * chunkStartCount * cellCount * cellCount * tileCount * tileCount;
+        progressMax = chunkStartCount * chunkStartCount * cellStartCount * cellStartCount * tileCount * tileCount;
         //Debug.LogFormat("Location {0} at {1}.", locale.placeName, locale.longLatCoord);
         //Debug.LogFormat("Seed is {0}, size is {1}², res is {2}².", GameRam.NoiseSettings.mSeed, "!!!", chunkCount * cellCount * tileCount);
         //GameRam.NoiseSettings.mLacunarity = zoomLacunarity;
@@ -97,7 +111,7 @@ public class LocationManager : MonoBehaviour
 
     void GenerateChunk(Chunk chunk)
     {
-        chunk.coordinates = new Coordinates(locale.coordinates.longitude + chunk.index.x * chunkMSize / degreeSize, locale.coordinates.latitude + chunk.index.y * chunkMSize / degreeSize);
+        chunk.coordinates = new Coordinates(locale.coordinates.longitude + chunk.index.x * chunkSizeMeters / degreeSize, locale.coordinates.latitude + chunk.index.y * chunkSizeMeters / degreeSize);
         chunk.parentLocale = locale;
 
         // Initialize Cells
@@ -119,7 +133,7 @@ public class LocationManager : MonoBehaviour
 
     async void GenerateCell(Cell cell)
     {
-        cell.coordinates = new Coordinates(cell.parentChunk.coordinates.longitude + cell.index.x * cellMSize / degreeSize, cell.parentChunk.coordinates.latitude + cell.index.y * cellMSize / degreeSize);
+        cell.coordinates = new Coordinates(cell.parentChunk.coordinates.longitude + cell.index.x * cellSizeMeters / degreeSize, cell.parentChunk.coordinates.latitude + cell.index.y * cellSizeMeters / degreeSize);
         cell.cellPlane = Instantiate(cellObjectTemplate, new Vector3(
             cell.parentChunk.index.x * cellStartCount * 200 + cell.index.x * 200, 0, cell.parentChunk.index.y * cellStartCount * 200 + cell.index.y * 200),
             Quaternion.identity, landRoot);
@@ -154,7 +168,7 @@ public class LocationManager : MonoBehaviour
 
     async Task<Color> GenerateTile(Tile tile)
     {
-        tile.coordinates = new Coordinates(tile.parentCell.coordinates.longitude + tile.index.x * tileMSize / degreeSize, tile.parentCell.coordinates.latitude + tile.index.y * tileMSize / degreeSize);
+        tile.coordinates = new Coordinates(tile.parentCell.coordinates.longitude + tile.index.x * tileSizeMeters / degreeSize, tile.parentCell.coordinates.latitude + tile.index.y * tileSizeMeters / degreeSize);
 
         double ele = await Generate.GetNoise(tile.coordinates, GameRam.worldMapCenter);
         tile.elevation = (float)ele;

@@ -13,11 +13,11 @@ public class WorldManager : MonoBehaviour
     public Vector2Int worldMapSize;
     [Min(1)]
     public float worldMapZoom = 1;
-    [Tooltip("Longitude Latitude?")]
+    [Tooltip("Longitude, Latitude?")]
     public Vector2 worldMapLocation;
     public bool imperialUnits = true;
     Texture2D worldMapTex;
-    public int randomLocCount;
+    public int randomLocationCount;
     public GameObject locationPrefab;
 
     [Header("Generator Settings")]
@@ -32,6 +32,8 @@ public class WorldManager : MonoBehaviour
     public float gain;
 
     // public Generate generator;
+
+    Vector2 mousePosition;
 
     //Internal Settings
     //private readonly int quadrantCount = 6;
@@ -62,7 +64,7 @@ public class WorldManager : MonoBehaviour
     //Internal
     [System.NonSerialized]
     public List<GameObject> pins;
-    //Vector2 mousPos;
+    //Vector2 mousePosition;
     public bool isLocationAllowed;
     public GlobeView globeView;
     [System.NonSerialized]
@@ -365,73 +367,74 @@ public class WorldManager : MonoBehaviour
         return null;
     }
 
-    //void OnPosition(InputValue val)
-    //{
-    //    {
-    //        mousPos = val.Get<Vector2>();
-    //    }
-    //}
+    void OnPosition(InputValue val)
+    {
+        {
+            mousePosition = val.Get<Vector2>();
+        }
+    }
 
-    //async void OnLocate()
-    //{
-    //    if (!isLocationAllowed)
-    //        return;
-
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(Camera.main.ScreenPointToRay(mousPos), out hit))
-    //    {
-    //        Debug.DrawLine(Camera.main.ScreenPointToRay(mousPos).origin, hit.point, Color.green, 60);
-    //        int u = Mathf.FloorToInt(hit.textureCoord.x * quadMapSize.x);
-    //        int v = Mathf.FloorToInt(hit.textureCoord.y * quadMapSize.y);
-
-    //        MeshFilter mf = (MeshFilter)globeView.gameObject.GetComponentInChildren(typeof(MeshFilter));
-    //        Mesh mesh = mf.mesh;
-     
-    //        int totalSubMeshes = mesh.subMeshCount;
-    //        int[] subMeshesFaceTotals= new int[totalSubMeshes];
-     
-    //        for(int i = 0; i < totalSubMeshes; i++)  
-    //        {
-    //            subMeshesFaceTotals[i] = mesh.GetTriangles(i).Length /3;
-    //        }
-
-    //        int q = -1;
-    //        int maxVal = 0;
-            
-    //        for(int i = 0; i < totalSubMeshes; i++)  
-    //        {
-    //            maxVal += subMeshesFaceTotals[i];
-            
-    //            if (hit.triangleIndex <= maxVal - 1 )
-    //            {      
-    //                q = i;
-    //                break;
-    //            }
-    
-    //        }
-
-    //        if (q < 0) Debug.LogError("Quad not detected.");
-    //        // else Debug.LogFormat("UVQ uvqCoordinates for new location is {0},{1} on {2}", u, v, q);
-
-    //        await GenerateLocation(new Vector3Int(u, v, q), false);
-    //    }
-    //}
-
-    public async void GenerateLocationButton()
+    async void OnLocate()
     {
         if (!isLocationAllowed)
             return;
 
-        for (int i = 0; i < randomLocCount; i++)
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePosition), out RaycastHit hit))
         {
-            int q = UnityEngine.Random.Range(0,6);
+            Debug.DrawLine(Camera.main.ScreenPointToRay(mousePosition).origin, hit.point, Color.green, 60);
+            int u = Mathf.FloorToInt(hit.textureCoord.x * quadMapSize.x);
+            int v = Mathf.FloorToInt(hit.textureCoord.y * quadMapSize.y);
+
+            MeshFilter mf = (MeshFilter)globeView.gameObject.GetComponentInChildren(typeof(MeshFilter));
+            Mesh mesh = mf.mesh;
+
+            int totalSubMeshes = mesh.subMeshCount;
+            int[] subMeshesFaceTotals = new int[totalSubMeshes];
+
+            for (int i = 0; i < totalSubMeshes; i++)
+            {
+                subMeshesFaceTotals[i] = mesh.GetTriangles(i).Length / 3;
+            }
+
+            int q = -1;
+            int maxVal = 0;
+
+            for (int i = 0; i < totalSubMeshes; i++)
+            {
+                maxVal += subMeshesFaceTotals[i];
+
+                if (hit.triangleIndex <= maxVal - 1)
+                {
+                    q = i;
+                    break;
+                }
+
+            }
+
+            if (q < 0) Debug.LogError("Quad not detected.");
+            // else Debug.LogFormat("UVQ uvqCoordinates for new location is {0},{1} on {2}", u, v, q);
+
+            await GenerateLocation(new Vector3Int(u, v, q), false);
+        }
+    }
+
+    public async void GenerateLocationButton()
+    {
+        if (!isLocationAllowed)
+        {
+            return;
+        }
+
+        for (int i = 0; i < randomLocationCount; i++)
+        {
             int u = UnityEngine.Random.Range(0,quadMapSize.x);
             int v = UnityEngine.Random.Range(0,quadMapSize.y);
+            int q = UnityEngine.Random.Range(0, 6);
             while (!await GenerateLocation(new Vector3Int(u, v, q), true))
             {
-                q = UnityEngine.Random.Range(0,6);
                 u = UnityEngine.Random.Range(0,quadMapSize.x);
                 v = UnityEngine.Random.Range(0,quadMapSize.y);
+                q = UnityEngine.Random.Range(0, 6);
             }
         }
     }
@@ -451,12 +454,12 @@ public class WorldManager : MonoBehaviour
         double elevation = await Generate.GetNoise(locale.coordinates);
         elevation = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)elevation));
         elevation = Mathf.Lerp(planet.lowestElevation, planet.highestElevation, ((float)elevation));
-        if (elevation < 0)
-        {
-            Destroy(pin);
-            //Debug.Log("Failed creation of location due to water.");
-            return false;
-        }
+        //if (elevation < 0)
+        //{
+        //    Destroy(pin);
+        //    //Debug.Log("Failed creation of location due to water.");
+        //    return false;
+        //}
         locale.avgElevation = elevation;
 
         pin.transform.localPosition = locale.coordinates.localPosition;
@@ -464,7 +467,7 @@ public class WorldManager : MonoBehaviour
 
         if (genName)
         {
-            int r = UnityEngine.Random.Range(3,10);
+            int r = UnityEngine.Random.Range(3,15);
             string name = string.Empty;
             char[] con = new char[]
                 {'b','c','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','z',/*'ɴ','\'','ŋ','β','ʃ','χ'*/};
@@ -485,20 +488,20 @@ public class WorldManager : MonoBehaviour
         {
             locale.placeName = string.Format("{0:n2}°{1} {2:n2}°{3}", Math.Abs(locale.coordinates.latitude), locale.coordinates.latitude > 0 ? "N" : "S", Math.Abs(locale.coordinates.longitude), locale.coordinates.longitude > 0 ? "E" : "W");
         }
-        // locale.placeName = string.Format("{0}\n{1}\n{2}", locale.longLatCoord.ToString(), locale.xyzCoord.ToString(), locale.uvqCoord.ToString());
+        locale.description = string.Format("{0}\n{1}\n{2}", locale.placeName, locale.coordinates.ToString(), locale.avgElevation);
         pin.name = locale.placeName;
         currentPin = pin;
 
-        int regIndex = Mathf.FloorToInt((float)(uvqCoord.y/localeCount.y) * regionCount.x + (float)(uvqCoord.x/localeCount.x));
-        // Debug.LogFormat("Creating pin at {0},{1} (region {3}) on quadrant {2}.", uvqCoord.x, uvqCoord.y, uvqCoord.z, regIndex);
+        int regionIndex = Mathf.FloorToInt((float)(uvqCoord.y/localeCount.y) * regionCount.x + (float)(uvqCoord.x/localeCount.x));
+        // Debug.LogFormat("Creating pin at {0},{1} (region {3}) on quadrant {2}.", uvqCoord.x, uvqCoord.y, uvqCoord.z, regionIndex);
 
         pinScript.linkedLocale = locale;
         pins.Add(pin);
-        if (planet.quadrants[uvqCoord.z].regions[regIndex].locales == null)
+        if (planet.quadrants[uvqCoord.z].regions[regionIndex].locales == null)
         {
-            planet.quadrants[uvqCoord.z].regions[regIndex].locales = new List<Locale>();
+            planet.quadrants[uvqCoord.z].regions[regionIndex].locales = new List<Locale>();
         }
-        planet.quadrants[uvqCoord.z].regions[regIndex].locales.Add(locale);
+        planet.quadrants[uvqCoord.z].regions[regionIndex].locales.Add(locale);
         return true;
     }
 

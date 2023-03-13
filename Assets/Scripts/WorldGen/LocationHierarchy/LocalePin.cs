@@ -7,14 +7,14 @@ public class LocalePin : MonoBehaviour
 {
     public Locale linkedLocale;
     GlobeView globeView;
-    WorldManager worldManager;
+    //WorldManager worldManager;
     TextMeshPro label;
     WorldTime localTime;
 
     void Start()
     {
         globeView = GameObject.Find("PlanetSystem").GetComponent<GlobeView>();
-        worldManager = GameObject.Find("PlanetSystem").GetComponent<WorldManager>();
+        //worldManager = GameObject.Find("PlanetSystem").GetComponent<WorldManager>();
         // timeZone = Mathf.RoundToInt(longLatCoord.x/360*globeView.currentTime.hoursInDay);
         label = GetComponentInChildren<TextMeshPro>();
         localTime = new WorldTime(globeView.currentTime);

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
 
+[System.Serializable]
 public class Coordinates
 {
-    public float longitude;
     public float latitude;
+    public float longitude;
     public Vector3 localPosition;
     public readonly int u = -1;
     public readonly int v = -1;
@@ -137,5 +138,10 @@ public class Coordinates
 
         latitude = lati;
         longitude = longi;
+    }
+
+    public override string ToString()
+    {
+        return string.Format("LL: {0}, {1}\nXYZ: {2}\nUVQ: {3}, {4}, {5}", latitude, longitude, localPosition.ToString(), u, v, quadrant);
     }
 }
