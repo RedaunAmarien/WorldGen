@@ -12,7 +12,9 @@ public class WorldUI : MonoBehaviour
 
     private Button generateWorldButton, regenMapButton, saveWorldButton, loadWorldButton, exportMapButton, generatePinsButton, loadLocationButton, unitTogglebutton;
     public ProgressBar progressBar, mapProgressBar;
-    private VisualElement mapImage;
+    private VisualElement worldMap;
+    private VisualElement areaMap;
+    private Label areaDescription;
     public UnityEvent loadLocation;
 
     void OnEnable()
@@ -29,9 +31,11 @@ public class WorldUI : MonoBehaviour
         generatePinsButton = root.Q<Button>("GeneratePinsButton");
         loadLocationButton = root.Q<Button>("LoadLocationButton");
         unitTogglebutton = root.Q<Button>("UnitToggleButton");
-        mapImage = root.Q<VisualElement>("MapImage");
+        worldMap = root.Q<VisualElement>("WorldMap");
+        areaMap = root.Q<VisualElement>("AreaMap");
         progressBar = root.Q<ProgressBar>("GenerationProgress");
         mapProgressBar = root.Q<ProgressBar>("MapProgress");
+        areaDescription = root.Q<Label>("AreaDescription");
 
         regenMapButton.SetEnabled(false);
 
@@ -46,19 +50,48 @@ public class WorldUI : MonoBehaviour
 
     }
 
-    public void SetMap(Texture2D tex)
+    public void SetWorldMap(Texture2D tex)
     {
-        mapImage.style.backgroundImage = tex;
+        worldMap.style.backgroundImage = tex;
+        areaDescription.text = string.Format("World Seed: {0}\nStyle: {1}\nFractal: {2}", worldManager.seed, worldManager.noiseType, worldManager.fractalType);
         regenMapButton.SetEnabled(true);
     }
-    
+
+    public void SetAreaMap(Texture2D tex, Locale locale)
+    {
+        areaMap.style.backgroundImage = tex;
+        areaDescription.text = string.Format(
+            "{0}\n{1:n2}°{2}, {3:n2}°{4}\nElevation: {5:n2} {6}",
+            locale.placeName,
+            Mathf.Abs(locale.coordinates.latitude),
+            locale.coordinates.latitude < 0 ? "S" : "N",
+            Mathf.Abs(locale.coordinates.longitude),
+            locale.coordinates.longitude < 0 ? "W" : "E",
+            worldManager.imperialUnits ? locale.avgElevation * 3.281f : locale.avgElevation,
+            worldManager.imperialUnits ? "ft" : "m"
+            );
+        regenMapButton.SetEnabled(true);
+    }
+
     void LateUpdate() {
-        if (worldManager.progMax > 0) progressBar.SetValueWithoutNotify((float)worldManager.progCurrent / (float)worldManager.progMax);
-        if (worldManager.mapProgMax > 0) mapProgressBar.SetValueWithoutNotify((float)worldManager.mapProgCurrent / (float)worldManager.mapProgMax);
+        if (worldManager.progMax > 0)
+        {
+            progressBar.SetValueWithoutNotify((float)worldManager.progCurrent / (float)worldManager.progMax);
+        }
+        if (worldManager.mapProgMax > 0)
+        {
+            mapProgressBar.SetValueWithoutNotify((float)worldManager.mapProgCurrent / (float)worldManager.mapProgMax);
+        }
         progressBar.title = string.Format("{0:p1}", (float)worldManager.progCurrent / worldManager.progMax);
         mapProgressBar.title = string.Format("{0:p1}", (float)worldManager.mapProgCurrent / (float)worldManager.mapProgMax);
-        if (Mathf.Approximately(worldManager.progCurrent, 0)) progressBar.title = "0%";
-        if (Mathf.Approximately(worldManager.mapProgCurrent, 0)) mapProgressBar.title = "0%";
+        if (Mathf.Approximately(worldManager.progCurrent, 0))
+        {
+            progressBar.title = "0%";
+        }
+        if (Mathf.Approximately(worldManager.mapProgCurrent, 0))
+        {
+            mapProgressBar.title = "0%";
+        }
 
         unitTogglebutton.text = worldManager.imperialUnits ? "Units: Imperial" : "Units: Metric";
     }

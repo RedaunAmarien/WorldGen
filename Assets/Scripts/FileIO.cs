@@ -19,7 +19,15 @@ public static class FileIO
     }
     public static void ExportMap(Texture2D tex)
     {
-        string saveName = string.Format("Planet [{0}]{1}{2}", GameRam.NoiseSettings.mSeed, GameRam.planet.worldManager.worldMapLocation == Vector2.zero ? "" : " at " + GameRam.planet.worldManager.worldMapLocation.ToString(), GameRam.planet.worldManager.worldMapZoom == 1 ? "" : " x" + GameRam.planet.worldManager.worldMapZoom);
+        Vector2 point = new(GameRam.planet.worldManager.areaMapLongitude, GameRam.planet.worldManager.areaMapLatitude);
+        string saveName = string.Format(
+                "Planet [{0}]{1}{2} {3} {4}",
+                GameRam.NoiseSettings.mSeed,
+                point == Vector2.zero ? "" : " at " + point.ToString(),
+                GameRam.planet.worldManager.areaMapZoom == 1 ? "" : " x" + GameRam.planet.worldManager.areaMapZoom,
+                GameRam.NoiseSettings.mNoiseType,
+                GameRam.NoiseSettings.mFractalType
+            );
         string savePath = StandaloneFileBrowser.SaveFilePanel("Export Map", Application.persistentDataPath, saveName, "png");
         if (savePath != string.Empty)
         {
@@ -36,14 +44,14 @@ public static class FileIO
     public static SaveData LoadFile()
     {
         string[] path = StandaloneFileBrowser.OpenFilePanel("Open File", Application.persistentDataPath, "mpgn", false);
-        SaveData data = new SaveData();
+        SaveData data = new();
         if (path[0] != string.Empty)
         {
             string json = File.ReadAllText(path[0]);
             data = JsonUtility.FromJson<SaveData>(json);
         }
         else return null;
-        
+
         return data;
     }
 }

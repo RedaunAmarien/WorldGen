@@ -8,6 +8,8 @@ TagManager:
   - UnitVillager
   - DELETE
   - Waypoint
+  - Pin
+  - Planet
   layers:
   - Default
   - TransparentFX

@@ -10,15 +10,18 @@ using System;
 public class WorldManager : MonoBehaviour
 {
     [Header("Map Settings")]
-    public Vector2Int worldMapSize;
+    public Vector2Int mapImageSize;
     [Min(1)]
-    public float worldMapZoom = 1;
+    public float areaMapZoom = 1;
     [Tooltip("Longitude, Latitude?")]
-    public Vector2 worldMapLocation;
+    public float areaMapLatitude;
+    public float areaMapLongitude;
     public bool imperialUnits = true;
     Texture2D worldMapTex;
     public int randomLocationCount;
     public GameObject locationPrefab;
+    public int locationNameMinCharCount;
+    public int locationNameMaxCharCount;
 
     [Header("Generator Settings")]
     public bool randomizeSeed;
@@ -37,12 +40,12 @@ public class WorldManager : MonoBehaviour
 
     //Internal Settings
     //private readonly int quadrantCount = 6;
-    Vector2Int regionCount = new(8,8);
+    Vector2Int regionCount = new(8, 8);
     Vector2Int localeCount = new(16, 16);
-    //Vector2Int chunkCount = new(16, 16);
+    //Vector2Int chunksPerSubLocale = new(16, 16);
     //Vector2Int blockCount = new(16, 16);
-    //Vector2Int tileCount = new(16, 16);
-    
+    //Vector2Int tilesPerCell = new(16, 16);
+
     [Header("References")]
     // public Slider progressBar;
     // [System.NonSerialized]
@@ -53,7 +56,7 @@ public class WorldManager : MonoBehaviour
     public Button[] menuButtons;
     // public Image map2d;
     Color32[] mapColors, worldMapColors;
-    public Gradient elevGrad;
+    public Gradient elevationGradient;
     // public Gradient heightGrad;
     // public AnimationCurve plainsFlattener;
     // public bool useFlattener;
@@ -73,18 +76,24 @@ public class WorldManager : MonoBehaviour
     [Header("Location Hierarchy")]
     public Planet planet;
 
-    void Start() {
+    void Start()
+    {
         planet.worldManager = this;
         GameRam.planet = planet;
-        GameRam.worldMapCenter = worldMapLocation;
+        GameRam.worldMapCenter = new Vector2(areaMapLongitude, areaMapLatitude);
         pins = new List<GameObject>();
         uI = GetComponent<WorldUI>();
         fNLSettings = new FastNoiseLite();
         Generate.fnl = fNLSettings;
+
+        GenerateMapButton();
     }
 
     public async void GenerateMapButton()
     {
+        areaMapZoom = 1;
+        areaMapLongitude = 0;
+        areaMapLatitude = 0;
         if (pins != null)
         {
             foreach (GameObject pin in pins)
@@ -115,6 +124,8 @@ public class WorldManager : MonoBehaviour
         }
 
         GameRam.planet = planet;
+
+        GenerateLocationButton();
     }
 
     public void UpdateRam()
@@ -149,12 +160,12 @@ public class WorldManager : MonoBehaviour
         fNLSettings.SetFractalGain(gain);
 
         UpdateRam();
-        
+
         // GameRam.NoiseSettings = fNLSettings;
 
         planet.minHeight = float.MaxValue;
         planet.maxHeight = float.MinValue;
-        
+
         quadMapSize.x = regionCount.x * localeCount.x;
         quadMapSize.y = regionCount.y * localeCount.y;
 
@@ -237,7 +248,7 @@ public class WorldManager : MonoBehaviour
             {
                 Vector3Int uvqCoordinates = new(regionIndex.x * localeCount.x + x, regionIndex.y * localeCount.y + y, quadrant.index);
                 coordinates[x, y] = new Coordinates(uvqCoordinates);
-                progCurrent ++;
+                progCurrent++;
             }
         }
         // Debug.Log(coordinates[5,5].ToString());
@@ -268,11 +279,11 @@ public class WorldManager : MonoBehaviour
                 {
                     for (int y = 0; y < localeCount.y; y++)
                     {
-                        float altitude = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)region.regionHeights[x,y]));
+                        float altitude = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)region.regionHeights[x, y]));
                         int pixIndex = (region.coordinates.y * regionCount.y * localeCount.x * localeCount.y) + (y * regionCount.y * localeCount.y) + (region.coordinates.x * localeCount.x) + x;
-                        // if (!isHeightMap) mapColors[pixIndex] = elevGrad.Evaluate(altitude);
+                        // if (!isHeightMap) mapColors[pixIndex] = elevationGradient.Evaluate(altitude);
                         // else mapColors[pixIndex] = heightGrad.Evaluate(altitude);
-                        mapColors[pixIndex] = elevGrad.Evaluate(altitude);
+                        mapColors[pixIndex] = elevationGradient.Evaluate(altitude);
                     }
                 }
             }
@@ -281,11 +292,11 @@ public class WorldManager : MonoBehaviour
             //Debug.Log("Applying globe textures.");
             quadrant.quadrantMapTex.SetPixels32(mapColors);
             quadrant.quadrantMapTex.Apply();
-            
+
             quadrant.quadrantMapTex.filterMode = FilterMode.Point;
             quadrant.quadrantMapTex.wrapMode = TextureWrapMode.Clamp;
         }
-        await ApplyMap();
+        await ApplyMap(true);
         foreach (Quadrant quadrant in planet.quadrants)
         {
             mapSphere.materials[quadrant.index].mainTexture = quadrant.quadrantMapTex;
@@ -294,18 +305,18 @@ public class WorldManager : MonoBehaviour
         return true;
     }
 
-    public async Task<bool> ApplyMap()
+    public async Task<bool> ApplyMap(bool isWorld)
     {
-        worldMapColors = new Color32[worldMapSize.x * worldMapSize.y];
+        worldMapColors = new Color32[mapImageSize.x * mapImageSize.y];
         List<Task> mapTasks = new();
         int mapRegionsX = 32;
         int mapRegionsY = 16;
-        
+
         for (int y = 0; y < mapRegionsY; y++)
         {
             for (int x = 0; x < mapRegionsX; x++)
             {
-                mapTasks.Add(GenerateMapColors(new Vector2Int(x, y), new Vector2Int(worldMapSize.x/mapRegionsX, worldMapSize.y/mapRegionsY)));
+                mapTasks.Add(GenerateMapColors(new Vector2Int(x, y), new Vector2Int(mapImageSize.x / mapRegionsX, mapImageSize.y / mapRegionsY)));
             }
         }
 
@@ -318,7 +329,7 @@ public class WorldManager : MonoBehaviour
 
         // Apply separate array to world map
         //Debug.LogFormat("Applying world map texture.");
-        worldMapTex = new Texture2D(worldMapSize.x, worldMapSize.y)
+        worldMapTex = new Texture2D(mapImageSize.x, mapImageSize.y)
         {
             filterMode = FilterMode.Point,
             wrapMode = TextureWrapMode.Clamp
@@ -327,39 +338,36 @@ public class WorldManager : MonoBehaviour
         worldMapTex.Apply();
         // Debug.LogFormat("World map is {1}x{2} or {0} pixels total.", worldMapColors.Length, worldMapTex.width, worldMapTex.height);
 
-        uI.SetMap(worldMapTex);
+        if (isWorld)
+        {
+            uI.SetWorldMap(worldMapTex);
+        }
+        else
+        {
+            uI.SetAreaMap(worldMapTex, currentPin.GetComponent<LocalePin>().linkedLocale);
+        }
         await new WaitForEndOfFrame();
         return true;
     }
 
-    public async Task<Color[]> GenerateMapColors(Vector2Int texSection, Vector2Int range)
+    public async Task<Color32[]> GenerateMapColors(Vector2Int sectionRoot, Vector2Int range)
     {
         mapProgCurrent = 0;
-        mapProgMax = worldMapSize.x * worldMapSize.y;
+        mapProgMax = mapImageSize.x * mapImageSize.y;
         // Debug.LogFormat("Generating colors for region {0}, {1} of world map.", section.x, section.y);
         for (int y = 0; y < range.y; y++)
         {
-            float py = texSection.y * range.y + y;
+            float pointY = sectionRoot.y * range.y + y;
             for (int x = 0; x < range.x; x++)
             {
-                float px = texSection.x * range.x + x;
-                float longi;
-                float lati;
-                longi = (px / worldMapSize.x) * (360 / worldMapZoom) + (-180 / worldMapZoom);
-                lati = (py / worldMapSize.y) * (180 / worldMapZoom) +  (-90 / worldMapZoom);
+                float pointX = sectionRoot.x * range.x + x;
+                float longi = (pointX / mapImageSize.x) * (360 / areaMapZoom) + (-180 / areaMapZoom);
+                float lati = (pointY / mapImageSize.y) * (180 / areaMapZoom) + (-90 / areaMapZoom);
+                float height = await Generate.GetNoise(new Coordinates(longi, lati), new Vector2(areaMapLongitude, areaMapLatitude));
 
-                double height = await Generate.GetNoise(new Coordinates(longi, lati), worldMapLocation);
-
-                // Vector3 point = await Conversion.Coordinates.LLtoXYZ(lnglat.x, lnglat.y);
-
-                // point = Quaternion.AngleAxis(worldMapLocation.y, Vector3.right) * point;
-                // point = Quaternion.AngleAxis(-worldMapLocation.x, Vector3.up) * point;
-
-                // float height = await Generate.GetNoise(point);
-                // Debug.LogFormat("{0} => {1} & {2} => {3}: {4} at {5}", px, lng, py, lat, point.ToString(), height);
-                height = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)height));
-                mapProgCurrent ++;
-                worldMapColors[Mathf.FloorToInt(py) * worldMapSize.x + Mathf.FloorToInt(px)] = elevGrad.Evaluate(((float)height));
+                height = Mathf.InverseLerp(planet.minHeight, planet.maxHeight, height);
+                mapProgCurrent++;
+                worldMapColors[Mathf.FloorToInt(pointY) * mapImageSize.x + Mathf.FloorToInt(pointX)] = elevationGradient.Evaluate(height);
             }
             // Debug.LogFormat("Analyzed part of row {0}.", y);
         }
@@ -381,40 +389,54 @@ public class WorldManager : MonoBehaviour
 
         if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePosition), out RaycastHit hit))
         {
-            Debug.DrawLine(Camera.main.ScreenPointToRay(mousePosition).origin, hit.point, Color.green, 60);
-            int u = Mathf.FloorToInt(hit.textureCoord.x * quadMapSize.x);
-            int v = Mathf.FloorToInt(hit.textureCoord.y * quadMapSize.y);
-
-            MeshFilter mf = (MeshFilter)globeView.gameObject.GetComponentInChildren(typeof(MeshFilter));
-            Mesh mesh = mf.mesh;
-
-            int totalSubMeshes = mesh.subMeshCount;
-            int[] subMeshesFaceTotals = new int[totalSubMeshes];
-
-            for (int i = 0; i < totalSubMeshes; i++)
+            if (hit.collider.CompareTag("Planet"))
             {
-                subMeshesFaceTotals[i] = mesh.GetTriangles(i).Length / 3;
-            }
+                Debug.DrawLine(Camera.main.ScreenPointToRay(mousePosition).origin, hit.point, Color.green, 60);
+                int u = Mathf.FloorToInt(hit.textureCoord.x * quadMapSize.x);
+                int v = Mathf.FloorToInt(hit.textureCoord.y * quadMapSize.y);
 
-            int q = -1;
-            int maxVal = 0;
+                MeshFilter mf = (MeshFilter)globeView.gameObject.GetComponentInChildren(typeof(MeshFilter));
+                Mesh mesh = mf.mesh;
 
-            for (int i = 0; i < totalSubMeshes; i++)
-            {
-                maxVal += subMeshesFaceTotals[i];
+                int totalSubMeshes = mesh.subMeshCount;
+                int[] subMeshesFaceTotals = new int[totalSubMeshes];
 
-                if (hit.triangleIndex <= maxVal - 1)
+                for (int i = 0; i < totalSubMeshes; i++)
                 {
-                    q = i;
-                    break;
+                    subMeshesFaceTotals[i] = mesh.GetTriangles(i).Length / 3;
                 }
 
+                int q = -1;
+                int maxVal = 0;
+
+                for (int i = 0; i < totalSubMeshes; i++)
+                {
+                    maxVal += subMeshesFaceTotals[i];
+
+                    if (hit.triangleIndex <= maxVal - 1)
+                    {
+                        q = i;
+                        break;
+                    }
+
+                }
+
+                if (q < 0) Debug.LogError("Quad not detected.");
+                // else Debug.LogFormat("UVQ uvqCoordinates for new manager is {0},{1} on {2}", u, v, q);
+
+                await GenerateLocation(new Vector3Int(u, v, q), true, true);
+            }
+            else if (hit.collider.CompareTag("Pin"))
+            {
+                Debug.DrawLine(Camera.main.ScreenPointToRay(mousePosition).origin, hit.point, Color.blue, 60);
+                LocalePin pin = hit.collider.gameObject.GetComponentInParent<LocalePin>();
+                currentPin = pin.gameObject;
+                areaMapLatitude = pin.linkedLocale.coordinates.latitude;
+                areaMapLongitude = pin.linkedLocale.coordinates.longitude;
+                areaMapZoom = 512;
             }
 
-            if (q < 0) Debug.LogError("Quad not detected.");
-            // else Debug.LogFormat("UVQ uvqCoordinates for new location is {0},{1} on {2}", u, v, q);
-
-            await GenerateLocation(new Vector3Int(u, v, q), false);
+            await ApplyMap(false);
         }
     }
 
@@ -427,19 +449,19 @@ public class WorldManager : MonoBehaviour
 
         for (int i = 0; i < randomLocationCount; i++)
         {
-            int u = UnityEngine.Random.Range(0,quadMapSize.x);
-            int v = UnityEngine.Random.Range(0,quadMapSize.y);
+            int u = UnityEngine.Random.Range(0, quadMapSize.x);
+            int v = UnityEngine.Random.Range(0, quadMapSize.y);
             int q = UnityEngine.Random.Range(0, 6);
-            while (!await GenerateLocation(new Vector3Int(u, v, q), true))
+            while (!await GenerateLocation(new Vector3Int(u, v, q), true, false))
             {
-                u = UnityEngine.Random.Range(0,quadMapSize.x);
-                v = UnityEngine.Random.Range(0,quadMapSize.y);
+                u = UnityEngine.Random.Range(0, quadMapSize.x);
+                v = UnityEngine.Random.Range(0, quadMapSize.y);
                 q = UnityEngine.Random.Range(0, 6);
             }
         }
     }
 
-    public async Task<bool> GenerateLocation(Vector3Int uvqCoord, bool genName)
+    public async Task<bool> GenerateLocation(Vector3Int uvqCoord, bool genName, bool allowOcean)
     {
         Locale locale = new()
         {
@@ -454,45 +476,31 @@ public class WorldManager : MonoBehaviour
         double elevation = await Generate.GetNoise(locale.coordinates);
         elevation = Mathf.InverseLerp(((float)planet.minHeight), ((float)planet.maxHeight), ((float)elevation));
         elevation = Mathf.Lerp(planet.lowestElevation, planet.highestElevation, ((float)elevation));
-        //if (elevation < 0)
-        //{
-        //    Destroy(pin);
-        //    //Debug.Log("Failed creation of location due to water.");
-        //    return false;
-        //}
+        if (elevation < 0 && !allowOcean)
+        {
+            Destroy(pin);
+            //Debug.Log("Failed creation of manager due to water.");
+            return false;
+        }
         locale.avgElevation = elevation;
 
-        pin.transform.localPosition = locale.coordinates.localPosition;
+        pin.transform.localPosition = locale.coordinates.cartesianPosition;
         pin.transform.LookAt(GameObject.Find("Planet").transform, GameObject.Find("Planet").transform.up);
 
         if (genName)
         {
-            int r = UnityEngine.Random.Range(3,15);
-            string name = string.Empty;
-            char[] con = new char[]
-                {'b','c','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','z',/*'ɴ','\'','ŋ','β','ʃ','χ'*/};
-            char[] vow = new char[]
-                {'a','e','i','o','u','y',/*'á','é','í','ó','ú','ü','æ','ɪ','œ','ʏ'*/};
-            for (int i = 0; i < r; i++)
-            {
-                if (i == 0)
-                    name += (char)UnityEngine.Random.Range('A','Z'+1);
-                else if (i % 2 == 0)
-                    name += con[UnityEngine.Random.Range(0,con.Length)];
-                else
-                    name += vow[UnityEngine.Random.Range(0,vow.Length)];
-            }
-            locale.placeName = name;
+            int nameLength = UnityEngine.Random.Range(locationNameMinCharCount, locationNameMaxCharCount + 1);
+            locale.placeName = Generate.Name(nameLength);
         }
         else
         {
-            locale.placeName = string.Format("{0:n2}°{1} {2:n2}°{3}", Math.Abs(locale.coordinates.latitude), locale.coordinates.latitude > 0 ? "N" : "S", Math.Abs(locale.coordinates.longitude), locale.coordinates.longitude > 0 ? "E" : "W");
+            locale.placeName = "[Unnamed]";
         }
-        locale.description = string.Format("{0}\n{1}\n{2}", locale.placeName, locale.coordinates.ToString(), locale.avgElevation);
+        locale.description = string.Format("{0}\nRoot Height: {1}", locale.coordinates.ToString(), locale.avgElevation);
         pin.name = locale.placeName;
         currentPin = pin;
 
-        int regionIndex = Mathf.FloorToInt((float)(uvqCoord.y/localeCount.y) * regionCount.x + (float)(uvqCoord.x/localeCount.x));
+        int regionIndex = Mathf.FloorToInt((float)(uvqCoord.y / localeCount.y) * regionCount.x + (float)(uvqCoord.x / localeCount.x));
         // Debug.LogFormat("Creating pin at {0},{1} (region {3}) on quadrant {2}.", uvqCoord.x, uvqCoord.y, uvqCoord.z, regionIndex);
 
         pinScript.linkedLocale = locale;
@@ -502,12 +510,17 @@ public class WorldManager : MonoBehaviour
             planet.quadrants[uvqCoord.z].regions[regionIndex].locales = new List<Locale>();
         }
         planet.quadrants[uvqCoord.z].regions[regionIndex].locales.Add(locale);
+
+        areaMapLatitude = locale.coordinates.latitude;
+        areaMapLongitude= locale.coordinates.longitude;
+        areaMapZoom = 512;
+
         return true;
     }
 
     public async void RegenMapButton()
     {
-        await GenerateMapColors(new Vector2Int(0,0), new Vector2Int(worldMapSize.x, worldMapSize.y));
+        await ApplyMap(false);
     }
 
     public void SaveMap()
@@ -540,6 +553,7 @@ public class WorldManager : MonoBehaviour
         pins.Clear();
 
         GameRam.FromSaveData(FileIO.LoadFile());
+        LoadedPlanet(GameRam.planet);
         GenerateMapButton();
     }
 

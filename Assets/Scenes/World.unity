@@ -581,6 +581,89 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 95438544}
   m_CullTransparentMesh: 1
+--- !u!1 &205975135
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 205975137}
+  - component: {fileID: 205975136}
+  m_Layer: 0
+  m_Name: BGCam
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!20 &205975136
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205975135}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.048884008, g: 0.048884008, b: 0.12100001, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 5
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &205975137
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205975135}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &232179204
 GameObject:
   m_ObjectHideFlags: 0
@@ -1071,42 +1154,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c18613cf419e9ba4d80c92aded71be2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldMapSize: {x: 512, y: 256}
-  worldMapZoom: 1
-  worldMapLocation: {x: 0, y: 0}
+  mapImageSize: {x: 512, y: 256}
+  areaMapZoom: 1
+  areaMapLatitude: 0
+  areaMapLongitude: 0
   imperialUnits: 1
-  randomLocationCount: 25
+  randomLocationCount: 15
   locationPrefab: {fileID: 7238227684960008694, guid: 68d8877f372667046823817d0cbecfba, type: 3}
+  locationNameMinCharCount: 3
+  locationNameMaxCharCount: 10
   randomizeSeed: 1
   seed: 0
   frequency: 1
   noiseType: 1
   fractalType: 1
   octaves: 10
-  lacunarity: 2
-  gain: 0.5
+  lacunarity: 2.4
+  gain: 0.6
   progMax: 0
   progCurrent: 0
   mapProgMax: 0
   mapProgCurrent: 0
-  elevGrad:
+  elevationGradient:
     serializedVersion: 2
-    key0: {r: 0, g: 0, b: 0.17, a: 1}
+    key0: {r: 0, g: 0, b: 0.103773594, a: 1}
     key1: {r: 0.13394445, g: 0.13394445, b: 0.8113208, a: 1}
     key2: {r: 0.43147027, g: 0.43147027, b: 0.9056604, a: 0}
     key3: {r: 0.9433962, g: 0.88514626, b: 0.6452474, a: 0}
     key4: {r: 0, g: 0.5377358, b: 0.07397832, a: 0}
     key5: {r: 0.027634395, g: 0.254717, b: 0.082090095, a: 0}
-    key6: {r: 0.36930403, g: 0.4056604, b: 0.3700295, a: 0}
-    key7: {r: 0.87664646, g: 0.9433962, b: 0.9337634, a: 0}
+    key6: {r: 0.87664646, g: 0.9433962, b: 0.9337634, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
     ctime1: 29491
     ctime2: 32440
     ctime3: 32768
     ctime4: 36044
-    ctime5: 44236
-    ctime6: 55705
-    ctime7: 65535
+    ctime5: 49151
+    ctime6: 65535
+    ctime7: 0
     atime0: 0
     atime1: 65535
     atime2: 0
@@ -1115,9 +1201,9 @@ MonoBehaviour:
     atime5: 0
     atime6: 0
     atime7: 0
-    m_Mode: 0
+    m_Mode: 2
     m_ColorSpace: -1
-    m_NumColorKeys: 8
+    m_NumColorKeys: 7
     m_NumAlphaKeys: 2
   mapSphere: {fileID: 3497722129301969881}
   currentPin: {fileID: 0}
@@ -1272,9 +1358,9 @@ Camera:
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 3
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
-  m_projectionMatrixMode: 2
+  m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
   m_Iso: 200
@@ -1297,9 +1383,9 @@ Camera:
   near clip plane: 0.3
   far clip plane: 5000
   field of view: 26.991467
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: -1
+  orthographic: 1
+  orthographic size: 3.55
+  m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 2147483647
@@ -1733,7 +1819,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &776825272
 Transform:
   m_ObjectHideFlags: 0
@@ -7062,7 +7148,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &974117003
 Transform:
   m_ObjectHideFlags: 0
@@ -12424,36 +12510,6 @@ MonoBehaviour:
   sunParent: {fileID: 820059991}
   zoomSpeed: 1
   orbitSpeed: 100
-  yearProgress: 0
-  daysPerSecond: 0.016666668
-  sunRotX: 0
-  tropicsLatitude: 23.43647
-  isOrtho: 1
-  isRotating: 0
-  dateText: {fileID: 1715364384}
-  useGlenriCalendar: 0
-  currentTime:
-    year: 0
-    month: 0
-    day: 0
-    dayOfYear: 0
-    hour: 0
-    minute: 0
-    second: 0
-    millisecond: 0
-    monthsInYear: 0
-    monthNames: []
-    monthName: 
-    daysInYear: 0
-    daysInMonth: 
-    hoursInDay: 0
-    minutesInHour: 0
-    secondsInMinute: 0
-    millisecondsInSecond: 0
-    leapMonth: 0
-    leapDays: 0
-    leapFrequency: 0
-    doubleYears: 0
 --- !u!114 &1219684849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13104,8 +13160,8 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 0, y: 3.5, z: 0}
-  - {x: 0, y: -3.5, z: 0}
+  - {x: 0, y: 3.25, z: 0}
+  - {x: 0, y: -3.25, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.1
@@ -14225,7 +14281,7 @@ GameObject:
   - component: {fileID: 3497722129301969880}
   m_Layer: 0
   m_Name: Planet
-  m_TagString: Untagged
+  m_TagString: Planet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

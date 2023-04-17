@@ -43,8 +43,8 @@ public class GridManagerInspector : Editor
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
 
-            x = EditorGUILayout.IntField("X", x);
-            z = EditorGUILayout.IntField("Z", z);
+            x = EditorGUILayout.IntField("x", x);
+            z = EditorGUILayout.IntField("z", z);
 
         GUILayout.EndHorizontal();
 

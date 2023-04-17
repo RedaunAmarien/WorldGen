@@ -45,7 +45,5 @@ public static class GameRam
         NoiseSettings.mLacunarity = data.lacunarity;
         NoiseSettings.mOctaves = data.octaves;
         NoiseSettings.mGain = data.gain;
-
-        GameObject.Find("World Manager").GetComponent<WorldManager>().LoadedPlanet(planet);
     }
 }

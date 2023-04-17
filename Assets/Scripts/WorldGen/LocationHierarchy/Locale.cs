@@ -15,17 +15,17 @@ public class Locale
     public Coordinates coordinates;
     public double avgElevation;
     public int timeZone;
-    public List<Chunk> chunks;
+    public List<SubLocale> subLocales;
 
-    public Chunk GetChunk(Vector2Int index)
+    public SubLocale GetSubLocale(Vector2Int index)
     {
-        for (int i = 0; i < chunks.Count; i++)
+        for (int i = 0; i < subLocales.Count; i++)
         {
-            Debug.LogFormat("Testing chunk {0} for {1}...", chunks[i].index, index);
-            if (chunks[i].index == index)
+            Debug.LogFormat("Testing chunk {0} for {1}...", subLocales[i].index, index);
+            if (subLocales[i].index == index)
             {
                 Debug.LogFormat("Chunk {0} found.", index);
-                return chunks[i];
+                return subLocales[i];
             }
         }
         Debug.LogWarningFormat("Chunk {0} not found.", index);

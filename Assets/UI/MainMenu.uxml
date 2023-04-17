@@ -5,9 +5,10 @@
             <ui:VisualElement style="flex-grow: 1; width: 50%; height: 100%;" />
             <ui:VisualElement style="background-color: rgba(0, 0, 0, 0); height: 100%; width: 50%; justify-content: center; align-items: center; align-self: center;">
                 <ui:Label tabindex="-1" text="World Map" display-tooltip-when-elided="true" style="color: rgb(255, 255, 255); font-size: 40px; margin-top: 15px;" />
-                <ui:VisualElement name="MapImage" style="background-color: rgb(64, 64, 64); width: 768px; height: 384px;" />
+                <ui:VisualElement name="WorldMap" style="width: 768px; height: 384px; -unity-background-scale-mode: scale-to-fit;" />
                 <ui:Label tabindex="-1" text="Area Map" display-tooltip-when-elided="true" style="font-size: 40px; color: rgb(255, 255, 255); margin-top: 15px;" />
-                <ui:VisualElement name="MapImage2" style="background-color: rgb(64, 64, 64); width: 768px; height: 384px;" />
+                <ui:VisualElement name="AreaMap" style="width: 768px; height: 384px; -unity-background-scale-mode: scale-to-fit;" />
+                <ui:Label tabindex="-1" text="World Seed: ???&#10;Coordinates: ???&#10;Zoom: ???" display-tooltip-when-elided="true" name="AreaDescription" style="font-size: 30px; color: rgb(255, 255, 255); -unity-text-align: middle-center;" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement style="left: 0; right: 0; bottom: 0; position: absolute; top: 90%; flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: center; padding-bottom: 25px;">
@@ -24,7 +25,7 @@
             <ui:Button text="Export Map" display-tooltip-when-elided="true" name="ExportMapButton" tooltip="Export a .png map of the world." />
             <ui:Button text="Generate Pins" display-tooltip-when-elided="true" name="GeneratePinsButton" tooltip="Generate random cities on the planet surface." />
             <ui:Button text="Load Location" display-tooltip-when-elided="true" name="LoadLocationButton" tooltip="Choose a location to start a new file in." />
-            <ui:Button text="Imperial Units" display-tooltip-when-elided="true" name="UnitToggleButton" tooltip="Toggle between metric and imperial measurements." />
+            <ui:Button text="Seed: 0" display-tooltip-when-elided="true" name="UnitToggleButton" tooltip="Toggle between metric and imperial measurements." />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

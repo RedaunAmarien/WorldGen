@@ -8,7 +8,7 @@ public class Coordinates
 {
     public float latitude;
     public float longitude;
-    public Vector3 localPosition;
+    public Vector3 cartesianPosition;
     public readonly int u = -1;
     public readonly int v = -1;
     public readonly int quadrant = -1;
@@ -27,15 +27,15 @@ public class Coordinates
         float x = Mathf.Cos(lati) * Mathf.Sin(longi);
         float y = Mathf.Sin(lati);
 
-        localPosition = new Vector3(x, y, z);
+        cartesianPosition = new Vector3(x, y, z);
     }
 
     public Coordinates(Vector3 localPosition)
     {
-        this.localPosition = localPosition;
+        this.cartesianPosition = localPosition;
 
-        float lati = -Mathf.Acos(this.localPosition.y) * Mathf.Rad2Deg + 90;
-        float longi = -Mathf.Atan2(this.localPosition.x, this.localPosition.z) * Mathf.Rad2Deg + 180;
+        float lati = -Mathf.Acos(this.cartesianPosition.y) * Mathf.Rad2Deg + 90;
+        float longi = -Mathf.Atan2(this.cartesianPosition.x, this.cartesianPosition.z) * Mathf.Rad2Deg + 180;
 
         if (lati > 90)
         {
@@ -109,14 +109,14 @@ public class Coordinates
 
                 //default:
                 //    Debug.LogError("Conversion.Coordinates.UVQtoXYZ failed. Quadrant " + quadrant + " not recognized.");
-                //    localPosition = Vector3.zero;
+                //    cartesianPosition = Vector3.zero;
         }
         newCoord.Normalize();
 
-        localPosition = newCoord;
+        cartesianPosition = newCoord;
 
-        float lati = -Mathf.Acos(localPosition.y) * Mathf.Rad2Deg + 90;
-        float longi = -Mathf.Atan2(localPosition.x, localPosition.z) * Mathf.Rad2Deg + 180;
+        float lati = -Mathf.Acos(cartesianPosition.y) * Mathf.Rad2Deg + 90;
+        float longi = -Mathf.Atan2(cartesianPosition.x, cartesianPosition.z) * Mathf.Rad2Deg + 180;
 
         if (lati > 90)
         {
@@ -142,6 +142,6 @@ public class Coordinates
 
     public override string ToString()
     {
-        return string.Format("LL: {0}, {1}\nXYZ: {2}\nUVQ: {3}, {4}, {5}", latitude, longitude, localPosition.ToString(), u, v, quadrant);
+        return string.Format("LL: {0}, {1}\nXYZ: {2}\nUVQ: {3}, {4}, {5}", latitude, longitude, cartesianPosition.ToString(), u, v, quadrant);
     }
 }

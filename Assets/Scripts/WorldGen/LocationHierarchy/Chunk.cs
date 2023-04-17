@@ -9,13 +9,13 @@ public class Chunk
     //public Vector2 longLatCoord;
     public Vector2Int index;
     [System.NonSerialized]
-    public Locale parentLocale;
+    public SubLocale parentSubLocale;
     [SerializeField] private List<Cell> cells;
 
-    public Chunk (Vector2Int newIndex, Locale parent)
+    public Chunk (Vector2Int newIndex, SubLocale parent)
     {
         index = newIndex;
-        parentLocale = parent;
+        parentSubLocale = parent;
         cells = new List<Cell>();
     }
 
