@@ -320,12 +320,15 @@ public class WorldManager : MonoBehaviour
             }
         }
 
+
+        await Awaitable.BackgroundThreadAsync();
         while (mapTasks.Count > 0)
         {
             Task finishedTask = await Task.WhenAny(mapTasks);
             mapTasks.Remove(finishedTask);
             // Debug.LogFormat("Awaiting map tasks... {0} remain.", mapTasks.Count);
         }
+        await Awaitable.MainThreadAsync();
 
         // Apply separate array to world map
         //Debug.LogFormat("Applying world map texture.");
@@ -352,6 +355,7 @@ public class WorldManager : MonoBehaviour
 
     public async Task<Color32[]> GenerateMapColors(Vector2Int sectionRoot, Vector2Int range)
     {
+        await Awaitable.BackgroundThreadAsync();
         mapProgCurrent = 0;
         mapProgMax = mapImageSize.x * mapImageSize.y;
         // Debug.LogFormat("Generating colors for region {0}, {1} of world map.", section.x, section.y);
@@ -372,6 +376,7 @@ public class WorldManager : MonoBehaviour
             // Debug.LogFormat("Analyzed part of row {0}.", y);
         }
         // Debug.LogFormat("Generated colors for region {0}, {1} of size {2} world map.", section.x, section.y, colors.Length);
+        await Awaitable.MainThreadAsync();
         return null;
     }
 

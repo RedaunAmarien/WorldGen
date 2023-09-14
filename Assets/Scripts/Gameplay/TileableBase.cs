@@ -18,11 +18,12 @@ public class TileableBase : MonoBehaviour
     public void SnapToRoot()
     {
         transform.SetParent(GameObject.Find("Map Root").transform, false);
-        transform.localPosition = new Vector3(
-            chunkIndex.x * manager.chunkEdgeLength + cellIndex.x * manager.cellEdgeLength + tileIndex.x * manager.tileEdgeLength,
-            manager.GetTileY(chunkIndex, cellIndex, tileIndex),
-            chunkIndex.y * manager.chunkEdgeLength + cellIndex.y * manager.cellEdgeLength + tileIndex.y * manager.tileEdgeLength
-        );
+        transform.localPosition = manager.GetComponent<Grid>().CellToLocal((Vector3Int)tileIndex);
+        //transform.localPosition = new Vector3(
+        //    chunkIndex.x * manager.chunkEdgeLength + cellIndex.x * manager.cellEdgeLength + tileIndex.x * manager.tileEdgeLength,
+        //    manager.GetTileY(chunkIndex, cellIndex, tileIndex),
+        //    chunkIndex.y * manager.chunkEdgeLength + cellIndex.y * manager.cellEdgeLength + tileIndex.y * manager.tileEdgeLength
+        //);
     }
 
     private void OnDrawGizmosSelected()

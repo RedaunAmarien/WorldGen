@@ -1,4 +1,3 @@
-using Autodesk.Fbx;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +6,6 @@ public class HexGrid : MonoBehaviour
 {
     public int width = 6;
     public int height = 6;
-    public float tileGap;
     public HexTile tilePrefab;
     HexTile[] tiles;
     HexMesh hexMesh;
@@ -15,6 +13,8 @@ public class HexGrid : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        if (Generate.fnl == null)
+            Generate.fnl = new FastNoiseLite();
         //gridCanvas = GetComponentInChildren<Canvas>();
         hexMesh = GetComponentInChildren<HexMesh>();
         tiles = new HexTile[width * height];
@@ -36,8 +36,8 @@ public class HexGrid : MonoBehaviour
     {
         Vector3 position;
         position.x = (x + z * 0.5f - z / 2) * HexTile.innerRadius * 2f;
-        position.y = 0;
         position.z = z * HexTile.outerRadius * 1.5f;
+        position.y = Generate.fnl.GetNoise(position.x, position.z);
 
         HexTile tile = tiles[i] = Instantiate(tilePrefab);
         tile.transform.SetParent(transform, false);

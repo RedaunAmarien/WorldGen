@@ -2,15 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
-using System.Linq;
 
 public class GameplayManager : MonoBehaviour
 {
     [SerializeField] private Coordinates gameplayCoordinates;
+    [Range(1, 8)]
+    [SerializeField] private int viewDistance;
     [SerializeField] private Locale currentLocale;
-    [SerializeField] private SubLocale currentSubLocale;
-    [SerializeField] private Chunk currentChunk;
+    //[SerializeField] private SubLocale dummySubLocale;
+    [SerializeField] private Chunk activeChunk;
     [SerializeField] private Transform currentTransform;
+    [SerializeField] private List<Chunk> loadedChunks;
 
     [Min(1)]
     [SerializeField] private int cellViewDistance;
@@ -24,12 +26,6 @@ public class GameplayManager : MonoBehaviour
     public int cellEdgeLength;
     public int chunkEdgeLength;
 
-    [Tooltip("Number of Chunks to render.")]
-    [SerializeField] private int chunkStartCount;
-    [Tooltip("Number of Cells to render.")]
-    [SerializeField] private int cellStartCount;
-
-
     private readonly float degreeSize = 40000000 / 360.0f;
     [SerializeField] private Gradient elevationGradient;
     private bool abort = false;
@@ -41,81 +37,51 @@ public class GameplayManager : MonoBehaviour
     //[SerializeField] private float zoomLacunarity;
     bool isNewGame;
 
-    void Awake()
+    private void Awake()
     {
-        if (GameRam.currentLocale != null)
+        if (GameRam.currentLocale == null)
         {
-            currentLocale = GameRam.currentLocale;
-            //currentSubLocale = currentLocale.GetSubLocale(Vector2Int.zero);
-            //currentChunk = currentSubLocale.GetChunk(Vector2Int.zero);
+            currentLocale = new Locale();
+            gameplayCoordinates = new Coordinates(0, 0);
+            GameRam.planet = new Planet();
+            return;
         }
-        else
-        {
-            //GameRam.FromSaveData(FileIO.LoadFile());
-            //GameRam.planet = new Planet();
-            //Generate.fnl = new FastNoiseLite(GameRam.NoiseSettings.mSeed);
-            abort = true;
-        }
+
+        currentLocale = GameRam.currentLocale;
+        gameplayCoordinates = currentLocale.coordinates;
     }
 
     void Start()
     {
         if (abort)
             return;
+
         cellEdgeLength = tileEdgeLength * tilesPerCell;
         chunkEdgeLength = cellEdgeLength * cellsPerChunk;
         if (!generated)
             GenerateLand();
-        if (isNewGame)
-        {
-
-        }
-    }
-
-    private void Update()
-    {
-        //Vector2Int currentChunkIndex = currentChunk.index;
-
-        //for (int y = Mathf.RoundToInt(currentTransform.position.y) - cellViewDistance; y < cellViewDistance; y++)
-        //{
-        //    if (y < 0)
-        //    {
-        //        currentChunkIndex.y--;
-        //        y = cellsPerChunk - 1;
-        //    }
-        //    for (int x = Mathf.RoundToInt(currentTransform.position.x) - cellViewDistance; x < cellViewDistance; x++)
-        //    {
-        //        if (x < 0)
-        //        {
-        //            currentChunkIndex.x--;
-        //            x = cellsPerChunk - 1;
-        //        }
-        //        bool isExisting = false;
-        //        foreach (GameObject cellObject in visibleCells)
-        //        {
-        //            Cell cell = cellObject.GetComponent<Cell>();
-        //            if (cell.index == new Vector2Int(x, y))
-        //            {
-        //                isExisting = true;
-        //            }
-        //        }
-        //        if (!isExisting)
-        //        {
-        //            GenerateCell(currentChunk, new Vector2Int(x, y));
-        //        }
-        //    }
-        //}
     }
 
     public int GetTileY(Vector2Int chunkIndex, Vector2Int cellIndex, Vector2Int tileIndex)
     {
-        Chunk chunk = currentSubLocale.GetChunk(chunkIndex);
-        if (chunk == null)
+        Chunk chunkToCheck = null;
+        for (int i = 0; i < loadedChunks.Count; i++)
+        {
+            //Debug.LogFormat("Testing chunk {0} for {1}...", loadedChunks[i].index, chunkIndex);
+            if (loadedChunks[i].index == chunkIndex)
+            {
+                //Debug.LogFormat("Chunk {0} found.", chunkIndex);
+                chunkToCheck = loadedChunks[i];
+                break;
+            }
+        }
+
+        if (chunkToCheck == null)
         {
             Debug.LogErrorFormat("Chunk {0} returned as null.", chunkIndex);
             return 0;
         }
-        Cell cell = chunk.GetCell(cellIndex);
+        Cell cell = chunkToCheck.GetCell(cellIndex);
         if (cell == null)
         {
             Debug.LogErrorFormat("Cell {0} returned as null.", cellIndex);
@@ -129,72 +95,66 @@ public class GameplayManager : MonoBehaviour
         }
         float percentOfHeight = Mathf.InverseLerp(GameRam.planet.minHeight, GameRam.planet.maxHeight, tile.elevation);
         float heightToElevation = Mathf.Lerp(GameRam.planet.lowestElevation, GameRam.planet.highestElevation, percentOfHeight);
-        int result = (int)System.Math.Round(heightToElevation - currentSubLocale.avgElevation);
-        Debug.LogFormat("Elevation {0}, Y {1},\nroot height {2}, interpolated height {3}, MeterHeight {4}.", tile.elevation, result, currentSubLocale.avgElevation, percentOfHeight, heightToElevation);
+        int result = (int)System.Math.Round(heightToElevation - currentLocale.avgElevation);
+        Debug.LogFormat("Elevation {0}, Y {1},\nroot height {2}, interpolated height {3}, MeterHeight {4}.", tile.elevation, result, currentLocale.avgElevation, percentOfHeight, heightToElevation);
         return result;
     }
 
     void GenerateLand()
     {
-        //progress = 0;
-        //progressMax = chunkStartCount * chunkStartCount * cellStartCount * cellStartCount * tilesPerCell * tilesPerCell;
-        //Debug.LogFormat("Location {0} at {1}.", currentSubLocale.placeName, currentSubLocale.longLatCoord);
-        //Debug.LogFormat("Seed is {0}, size is {1}², res is {2}².", GameRam.NoiseSettings.mSeed, "!!!", chunksPerSubLocale * cellsPerChunk * tilesPerCell);
-        //GameRam.NoiseSettings.mLacunarity = zoomLacunarity;
+        if (Generate.fnl == null)
+            Generate.fnl = new FastNoiseLite();
 
-        // Initialize Chunks
-        currentLocale.subLocales = new List<SubLocale>
+        //dummySubLocale = new SubLocale();
+        loadedChunks.Clear();
+        for (int x = -viewDistance; x <= viewDistance; x++)
         {
-            new SubLocale()
-        };
-        currentSubLocale = currentLocale.subLocales[0];
-        currentSubLocale.coordinates = currentLocale.coordinates;
-
-        currentSubLocale.chunks = new List<Chunk>();
-        //List<Task> tasks = new List<Task>();
-        for (int y = 0; y < chunkStartCount; y++)
-        {
-            for (int x = 0; x < chunkStartCount; x++)
+            for (int y = -viewDistance; y <= viewDistance; y++)
             {
-                Vector2Int index = new(x, y);
-                Chunk newChunk = new(index, currentSubLocale);
-                GenerateChunk(newChunk);
-            }
-        }
-        //Destroy(cellObjectTemplate);
-        //Debug.LogFormat("Height MinMax: {0}–{1}", GameRam.planet.minHeight, GameRam.planet.maxHeight);
-    }
-
-    void GenerateChunk(Chunk chunk)
-    {
-        chunk.coordinates = new Coordinates(currentSubLocale.coordinates.longitude + chunk.index.x * chunkEdgeLength / degreeSize, currentSubLocale.coordinates.latitude + chunk.index.y * chunkEdgeLength / degreeSize);
-        chunk.parentSubLocale = currentSubLocale;
-
-        // Initialize Cells
-        //List<Task> cellTasks = new List<Task>();
-        for (int y = 0; y < cellStartCount; y++)
-        {
-            for (int x = 0; x < cellStartCount; x++)
-            {
-                Vector2Int index = new(x, y);
-                GenerateCell(chunk, index);
-
+                Chunk newChunk = new(new Vector2Int(x, y));
+                newChunk.coordinates = new Coordinates(
+                    gameplayCoordinates.longitude + newChunk.index.x * chunkEdgeLength / degreeSize,
+                    gameplayCoordinates.latitude + newChunk.index.y * chunkEdgeLength / degreeSize);
+                loadedChunks.Add(newChunk);
             }
         }
 
-        currentSubLocale.chunks.Add(chunk);
-        //Debug.LogFormat("Finished Generation of Chunk {0}.", chunk.tileIndex.ToString());
+        foreach (Chunk chunk in loadedChunks)
+        {
+            for (int x = 0; x < cellsPerChunk; x++)
+            {
+                for (int y = 0; y < cellsPerChunk; y++)
+                {
+                    GenerateCell(chunk, new Vector2Int(x, y));
+                }
+            }
+        }
     }
 
     async void GenerateCell(Chunk parent, Vector2Int index)
     {
-        GameObject newCell = GameObject.Instantiate(
+        GameObject newCell = Instantiate(
             cellObjectTemplate, new Vector3(
-                parent.index.x * cellStartCount * 100 + index.x * cellEdgeLength, 0, parent.index.y * cellStartCount * 100 + index.y * cellEdgeLength), Quaternion.identity, landRoot);
+                parent.index.x * cellsPerChunk * (tilesPerCell * tileEdgeLength) + index.x * cellEdgeLength,
+                0,
+                parent.index.y * cellsPerChunk * (tilesPerCell * tileEdgeLength) + index.y * cellEdgeLength),
+            Quaternion.identity, landRoot);
+
         Cell cell = newCell.GetComponent<Cell>();
-        cell.coordinates = new Coordinates(parent.coordinates.longitude + index.x * cellEdgeLength / degreeSize, parent.coordinates.latitude + index.y * cellEdgeLength / degreeSize);
+        cell.coordinates = new Coordinates(
+            parent.coordinates.longitude + index.x * cellEdgeLength / degreeSize,
+            parent.coordinates.latitude + index.y * cellEdgeLength / degreeSize);
         cell.parentChunk = parent;
         cell.index = index;
+
+        float ele = await Generate.GetNoise(cell.coordinates, GameRam.worldMapCenter);
+        float inv = Mathf.InverseLerp(GameRam.planet.minHeight, GameRam.planet.maxHeight, ele);
+        float elevation = Mathf.Lerp(GameRam.planet.lowestElevation, GameRam.planet.highestElevation, inv);
+
+        newCell.transform.position = new Vector3(
+            newCell.transform.position.x,
+            elevation,
+            newCell.transform.position.z);
 
         //cellObject.cellPlane.GetComponent<Mesh>().vertices = new Vector3[0];
 
@@ -221,13 +181,15 @@ public class GameplayManager : MonoBehaviour
         newTex.Apply();
         cell.cellPlane.GetComponentInChildren<Renderer>().material.mainTexture = newTex;
 
-        cell.parentChunk.AddCell(cell);
+        cell.parentChunk.SetCell(cell);
         //Debug.LogFormat("Finished Generation of Cell {0}.", cellObject.tileIndex.ToString());
     }
 
     async Task<Color> GenerateTile(Tile tile)
     {
-        tile.coordinates = new Coordinates(tile.parentCell.coordinates.longitude + tile.index.x * tileEdgeLength / degreeSize, tile.parentCell.coordinates.latitude + tile.index.y * tileEdgeLength / degreeSize);
+        tile.coordinates = new Coordinates(
+            tile.parentCell.coordinates.longitude + tile.index.x * tileEdgeLength / degreeSize,
+            tile.parentCell.coordinates.latitude + tile.index.y * tileEdgeLength / degreeSize);
 
         double ele = await Generate.GetNoise(tile.coordinates, GameRam.worldMapCenter);
         tile.elevation = (float)ele;

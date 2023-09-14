@@ -6,31 +6,23 @@ using UnityEngine;
 public class Chunk
 {
     public Coordinates coordinates;
-    //public Vector2 longLatCoord;
     public Vector2Int index;
-    [System.NonSerialized]
-    public SubLocale parentSubLocale;
-    [SerializeField] private List<Cell> cells;
+    public int cellsPerChunkEdge = 8;
+    [SerializeField] private Cell[,] cells;
 
-    public Chunk (Vector2Int newIndex, SubLocale parent)
+    public Chunk(Vector2Int newIndex)
     {
         index = newIndex;
-        parentSubLocale = parent;
-        cells = new List<Cell>();
+        cells = new Cell[cellsPerChunkEdge, cellsPerChunkEdge];
     }
 
-    public void AddCell(Cell cell)
+    public void SetCell(Cell cell)
     {
-        cells.Add(cell);
+        cells[cell.index.x, cell.index.y] = cell;
     }
 
     public Cell GetCell(Vector2Int index)
     {
-        for (int i = 0; i < cells.Count; i++)
-        {
-            if (cells[i].index == index)
-                return cells[i];
-        }
-        return null;
+        return cells[index.x, index.y];
     }
 }

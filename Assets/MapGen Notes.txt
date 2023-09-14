@@ -1,0 +1,52 @@
+===GLOBE VIEW==
+
+1	Planet				40,960 km circumference
+	-Global elevations
+	-Global noise generation settings
+	-Global max/min elevations
+	-Global texture & heightmap
+	
+6	Quadrants			10,240 km quarter-circumference
+	-Generates Regions for world view texturing and elevations
+	-Holds region data and quadrant min/max
+	
+64	Regions		(8x8)	1,280 km edge (in cubed gameplay view)
+	-Generates actual elevation and texture data to send to quadrants
+	-Holds regional elevation data and regional min/max
+	-Holds locales
+	
+256	Locales		(16x16)	80 km edge
+	-Generated only when needed
+	-Can be read for location properties
+	-May be base for local gameplay map? (Too large!!)
+
+===AREA MAP===
+
+256	Sub-Locale	(16x16)	5000m edge
+
+100	Chunk/Sub	(10x10)	500m edge
+	
+25	Cell/Chunk	(5x5)	100m edge
+
+100	Tile/Cell	(10x10)	10m edge
+	
+100	Meter/Tile	(10x10)	1m edge
+	
+===COORDINATES===
+
+Coordinates have multiple conversions:
+	-Longitude/Latitude (for UI and projection)
+	-Local Position (XYZ) (from normalizing UVQ, for worldgen and math)
+	-UVQ (for easy location data and texture maps)
+		-Possible sub-uvq for per-locale coords
+	-Root Coordinate is the corner of any particular level, not the center
+
+=-=-=-= NEW? =-=-=-=
+
+1 m edge Tile
+16 m edge Cell
+128 m edge Chunk
+1024 m edge Gigachunk
+8192 m edge Sublocale
+65.536 km edge Locale
+

@@ -25,6 +25,7 @@ public static class Generate
     
     public static async Task<float[,]> GetNoise(Coordinates[,] coordinates)
     {
+        await Awaitable.BackgroundThreadAsync();
         int xLength = coordinates.GetLength(0);
         int yLength = coordinates.GetLength(1);
 
@@ -38,6 +39,7 @@ public static class Generate
                 noises[x,y] = fnl.GetNoise(point.x, point.y, point.z);
             }
         }
+        await Awaitable.MainThreadAsync();
 
         await new WaitForEndOfFrame();
         return noises;
@@ -58,13 +60,17 @@ public static class Generate
         for (int i = 0; i < length; i++)
         {
             if (i == 0)
-                newName += (char)UnityEngine.Random.Range('A', 'Z' + 1);
-            else if (i % 2 == 0)
-                newName += con[UnityEngine.Random.Range(0, con.Length)];
+                newName += (char)Random.Range('A', 'Z' + 1);
             else
-                newName += vow[UnityEngine.Random.Range(0, vow.Length)];
+            {
+                //int isCon = Mathf.RoundToInt(Random.value);
+                //if (isCon == 0)
+                if (i % 2 == 0)
+                    newName += con[Random.Range(0, con.Length)];
+                else
+                    newName += vow[Random.Range(0, vow.Length)];
+            }
         }
-
         return newName;
     }
 }

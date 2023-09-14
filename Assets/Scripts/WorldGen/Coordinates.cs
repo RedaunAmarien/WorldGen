@@ -32,10 +32,10 @@ public class Coordinates
 
     public Coordinates(Vector3 localPosition)
     {
-        this.cartesianPosition = localPosition;
+        cartesianPosition = localPosition;
 
-        float lati = -Mathf.Acos(this.cartesianPosition.y) * Mathf.Rad2Deg + 90;
-        float longi = -Mathf.Atan2(this.cartesianPosition.x, this.cartesianPosition.z) * Mathf.Rad2Deg + 180;
+        float lati = -Mathf.Acos(cartesianPosition.y) * Mathf.Rad2Deg + 90;
+        float longi = -Mathf.Atan2(cartesianPosition.x, cartesianPosition.z) * Mathf.Rad2Deg + 180;
 
         if (lati > 90)
         {
