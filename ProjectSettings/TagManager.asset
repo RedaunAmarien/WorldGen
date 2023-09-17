@@ -6,10 +6,10 @@ TagManager:
   tags:
   - Road
   - UnitVillager
-  - DELETE
   - Waypoint
   - Pin
   - Planet
+  - ChunkBoundary
   layers:
   - Default
   - TransparentFX

@@ -8,22 +8,26 @@ public class TileableBase : MonoBehaviour
     [SerializeField] Vector2Int cellIndex;
     [SerializeField] Vector2Int tileIndex;
     GameplayManager manager;
+    bool isSnapped;
 
     private void Start()
     {
-        manager = GameObject.Find("GameplayManager").GetComponent<GameplayManager>();
-        SnapToRoot();
+        manager = GameObject.Find("Player").GetComponent<GameplayManager>();
+    }
+
+    private void Update()
+    {
+        if (manager.fullyInitialized && !isSnapped)
+        {
+            SnapToRoot();
+        }
     }
 
     public void SnapToRoot()
     {
-        transform.SetParent(GameObject.Find("Map Root").transform, false);
-        transform.localPosition = manager.GetComponent<Grid>().CellToLocal((Vector3Int)tileIndex);
-        //transform.localPosition = new Vector3(
-        //    chunkIndex.x * manager.chunkEdgeLength + cellIndex.x * manager.cellEdgeLength + tileIndex.x * manager.tileEdgeLength,
-        //    manager.GetTileY(chunkIndex, cellIndex, tileIndex),
-        //    chunkIndex.y * manager.chunkEdgeLength + cellIndex.y * manager.cellEdgeLength + tileIndex.y * manager.tileEdgeLength
-        //);
+        transform.SetParent(GameObject.Find("ObjectRoot").transform, false);
+        transform.localPosition = manager.Indices2Position(chunkIndex, cellIndex, tileIndex);
+        isSnapped = true;
     }
 
     private void OnDrawGizmosSelected()

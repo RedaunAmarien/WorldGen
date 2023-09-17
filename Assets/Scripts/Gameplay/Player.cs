@@ -4,15 +4,11 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    [SerializeField] int riverLength = 16;
 
-    // Update is called once per frame
-    void Update()
+    void OnSelect()
     {
-        
+        GameplayManager manager = GetComponent<GameplayManager>();
+        manager.AddRiver(manager.Position2Indices(transform.position), riverLength);
     }
 }

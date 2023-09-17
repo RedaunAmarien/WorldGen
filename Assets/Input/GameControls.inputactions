@@ -34,7 +34,7 @@
                 },
                 {
                     "name": "Select",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "5582186e-9689-4629-b1c7-c55e853772f3",
                     "expectedControlType": "Button",
                     "processors": "",
@@ -211,7 +211,7 @@
                 {
                     "name": "",
                     "id": "0b2cbb8c-919b-46c8-bf3c-c970593829bb",
-                    "path": "<Gamepad>/leftStick/y",
+                    "path": "<Gamepad>/rightStick/y",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -277,7 +277,7 @@
                 {
                     "name": "",
                     "id": "c9310f06-de47-43f3-aaa1-7a0008af5f29",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",

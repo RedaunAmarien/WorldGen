@@ -9,9 +9,9 @@ public class Coordinates
     public float latitude;
     public float longitude;
     public Vector3 cartesianPosition;
-    public readonly int u = -1;
-    public readonly int v = -1;
-    public readonly int quadrant = -1;
+    public int u = -1;
+    public int v = -1;
+    public int quadrant = -1;
 
     public Coordinates(float longitude, float latitude)
     {
